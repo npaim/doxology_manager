@@ -3,7 +3,7 @@ from src.db.base import Base
 
 
 class Song(Base):
-    __tablename__ = "Songs"
+    __tablename__ = "songs"
 
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=True)

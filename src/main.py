@@ -1,26 +1,12 @@
-from src.db.base import engine, Base, SessionLocal
+from fastapi import FastAPI
+from src.db.base import Base, engine
 from src.db import models
 
-from src.db.crud import insert_song, get_all_songs
+from src.api.routes import songs
 
-def main():
-    Base.metadata.create_all(bind=engine)
+app = FastAPI(title="Doxology Manager API")
 
-    db = SessionLocal()
+# create tables only for dev (alembic handles prod)
+#Base.metadata.create_all(bind=engine)
 
-    try:
-        print("Inserting song...")
-        insert_song(db, title="SANTO, SANTO, SANTO!", hymn_number=1, misc="HASD")
-
-        print("Querying songs...")
-        songs = get_all_songs(db)
-
-        for song in songs:
-            print(f"{song.id}: {song.hymn_number} -- {song.title}")
-
-    finally:
-        db.close()
-
-
-if __name__ == "__main__":
-    main()
+app.include_router(songs.router, prefix="/songs", tags=["songs"])
