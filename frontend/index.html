@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Doxology Manager</title>
+  <link rel="stylesheet" href="main.css" />
+</head>
+<body>
+  <h1>Doxology Manager</h1>
+
+  <section>
+    <h2>Add Song</h2>
+    <form id="song-form">
+      <input type="text" id="title" placeholder="Title" required />
+      <input type="number" id="hymn_number" placeholder="Hymn #" required />
+      <input type="text" id="misc" placeholder="Misc" />
+      <button type="submit">Add</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Songs</h2>
+    <ul id="songs-list"></ul>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>
