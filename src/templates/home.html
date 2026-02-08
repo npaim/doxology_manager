@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Doxology Manager{% endblock %}
+
+{% block content %}
+
+{% include "partials/header.html" %}
+
+<div class="app-layout">
+
+  {% include "partials/sidebar.html" %}
+
+  <main>
+    {% include "partials/calendar.html" %}
+    {% include "partials/songs_panel.html" %}
+  </main>
+
+</div>
+
+{% include "partials/modal.html" %}
+
+{% endblock %}

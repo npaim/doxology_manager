@@ -1,0 +1,2684 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#4263eb">
+  <meta name="description" content="Portal de Cultos - Sistema de gerenciamento de cultos e cronogramas">
+  <title>Portal de Cultos</title>
+  
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+  
+  <style>
+    /* ============================================
+       RESET E CONFIGURAÇÕES GLOBAIS
+    ============================================ */
+    
+    * {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: rgba(66, 99, 235, 0.2);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    html {
+      font-size: 25px;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+      background: #f8f9fa;
+      color: #212529;
+      line-height: 1.6;
+      padding-bottom: 150px;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    :focus {
+      outline: 2px solid #4263eb;
+      outline-offset: 2px;
+    }
+    
+    :focus:not(:focus-visible) {
+      outline: none;
+    }
+    
+    /* ============================================
+       HEADER ULTRA VISÍVEL
+    ============================================ */
+    
+    .header {
+      background: #ffffff;
+      padding: 20px;
+      border-bottom: 3px solid #e9ecef;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .app-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+      min-width: 0; /* Previne overflow */
+    }
+    
+    .app-logo {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #4263eb, #7048e8);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 32px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 15px rgba(66,99,235,0.3);
+      transition: transform 0.3s ease;
+    }
+    
+    .app-logo:hover {
+      transform: rotate(5deg) scale(1.05);
+    }
+    
+    .app-title h1 {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #212529;
+      margin-bottom: 2px;
+      line-height: 1.1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    #loadingStatus {
+      font-size: 1rem;
+      color: #6c757d;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 500;
+    }
+    
+    .loading-spinner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid #e9ecef;
+      border-top: 3px solid #4263eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    /* ============================================
+       CONTROLES DE NAVEGAÇÃO
+    ============================================ */
+    
+    .nav-controls {
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    
+    .nav-btn {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      border: 2px solid #e9ecef;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .nav-btn:active {
+      background: #f1f3f5;
+      transform: scale(0.96);
+    }
+    
+    .nav-btn:hover {
+      border-color: #4263eb;
+      box-shadow: 0 4px 12px rgba(66,99,235,0.15);
+    }
+    
+    /* BOTÃO REFRESH COM ANIMAÇÃO LARANJA */
+    .refresh-btn {
+      border: 3px solid #ff922b !important;
+      background: #fff9db !important;
+    }
+    
+    .refresh-btn.rotating {
+      border-color: #4263eb !important;
+      animation: rotateBorder 1s linear infinite;
+    }
+    
+    @keyframes rotateBorder {
+      0% { border-color: #ff922b; }
+      25% { border-color: #4263eb; }
+      50% { border-color: #40c057; }
+      75% { border-color: #fa5252; }
+      100% { border-color: #ff922b; }
+    }
+    
+    /* BOTÃO AGENDAR CULTO */
+    .nav-action.agendar {
+      border: 2px solid #ff922b !important;
+      background: #fff9db !important;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .nav-action.agendar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 2px solid transparent;
+      border-radius: 24px;
+      animation: pulseOrange 2s infinite;
+    }
+    
+    @keyframes pulseOrange {
+      0% { border-color: rgba(255, 146, 43, 0.2); }
+      50% { border-color: rgba(255, 146, 43, 0.8); }
+      100% { border-color: rgba(255, 146, 43, 0.2); }
+    }
+    
+    .nav-action.agendar.clicked {
+      animation: clickPulse 0.6s ease;
+    }
+    
+    @keyframes clickPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    
+    /* ============================================
+       ELEMENTOS DESKTOP
+    ============================================ */
+    
+    .desktop-reload-btn {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 70px;
+      height: 70px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ff922b, #ff6b6b);
+      border: 4px solid white;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 25px rgba(255, 146, 43, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .desktop-reload-btn:hover {
+      transform: rotate(180deg) scale(1.1);
+      box-shadow: 0 8px 30px rgba(255, 146, 43, 0.7);
+    }
+    
+    .desktop-reload-btn:active {
+      transform: rotate(180deg) scale(0.95);
+    }
+    
+    .desktop-calendar {
+      display: none;
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 380px;
+      background: white;
+      border-radius: 24px;
+      padding: 25px;
+      box-shadow: 0 12px 50px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      max-height: calc(100vh - 150px);
+      overflow-y: auto;
+      border: 4px solid #4263eb;
+      scrollbar-width: thin;
+      scrollbar-color: #4263eb #f1f3f5;
+    }
+    
+    .desktop-calendar::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .desktop-calendar::-webkit-scrollbar-track {
+      background: #f1f3f5;
+      border-radius: 4px;
+    }
+    
+    .desktop-calendar::-webkit-scrollbar-thumb {
+      background: #4263eb;
+      border-radius: 4px;
+    }
+    
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 3px solid #e9ecef;
+    }
+    
+    .calendar-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #212529;
+    }
+    
+    .calendar-nav {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .calendar-nav-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 14px;
+      border: 3px solid #e9ecef;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 900;
+      transition: all 0.2s ease;
+    }
+    
+    .calendar-nav-btn:hover {
+      border-color: #ff922b;
+      background: #fff9db;
+      color: #ff922b;
+    }
+    
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .weekday {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #4263eb;
+      padding: 10px 0;
+      background: #f0f4ff;
+      border-radius: 10px;
+    }
+    
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      border: 2px solid transparent;
+      user-select: none;
+    }
+    
+    .calendar-day:hover {
+      background: #f8f9fa;
+      border-color: #e9ecef;
+      transform: scale(1.05);
+    }
+    
+    .calendar-day.selected {
+      background: #4263eb;
+      color: white;
+      font-weight: 900;
+      border-color: #4263eb;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(66,99,235,0.3);
+    }
+    
+    .calendar-day.today {
+      border: 3px solid #40c057;
+      font-weight: 900;
+      color: #40c057;
+    }
+    
+    .calendar-day.has-events::after {
+      content: '★';
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      font-size: 10px;
+      color: #ff922b;
+      animation: twinkle 2s infinite;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .calendar-day.selected.has-events::after {
+      color: white;
+    }
+    
+    .calendar-day.empty {
+      visibility: hidden;
+      pointer-events: none;
+    }
+    
+    .calendar-events {
+      margin-top: 20px;
+      border-top: 3px solid #e9ecef;
+      padding-top: 20px;
+    }
+    
+    .calendar-events h4 {
+      font-size: 1.1rem;
+      font-weight: 900;
+      color: #212529;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .event-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 14px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+    
+    .event-item:hover {
+      background: #f0f4ff;
+      border-color: #4263eb;
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(66,99,235,0.1);
+    }
+    
+    .event-time {
+      font-weight: 900;
+      color: #4263eb;
+      min-width: 45px;
+      font-size: 0.95rem;
+    }
+    
+    .event-title {
+      flex: 1;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .event-status {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+    
+    .event-status.ok { background: #40c057; }
+    .event-status.warn { background: #ff922b; }
+    .event-status.bad { background: #fa5252; }
+    
+    /* ============================================
+       CONTAINER PRINCIPAL
+    ============================================ */
+    
+    .main-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    
+    /* ============================================
+       WEEK SELECTOR
+    ============================================ */
+    
+    .week-selector {
+      background: white;
+      border-radius: 24px;
+      padding: 30px 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+      border: 2px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+    
+    .week-selector:hover {
+      border-color: #4263eb;
+    }
+    
+    .week-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+    
+    .week-title {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .week-title .month {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #212529;
+      display: block;
+      line-height: 1.1;
+    }
+    
+    .week-title .range {
+      font-size: 1.1rem;
+      color: #6c757d;
+      margin-top: 5px;
+      display: block;
+      font-weight: 500;
+    }
+    
+    /* ============================================
+       DIAS DA SEMANA
+    ============================================ */
+    
+    .week-days {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .day-card {
+      background: white;
+      border: 3px solid #e9ecef;
+      border-radius: 20px;
+      padding: 30px 25px;
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      min-height: 120px;
+      user-select: none;
+    }
+    
+    .day-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: linear-gradient(to right, rgba(66,99,235,0.1), transparent);
+      transition: width 0.3s ease;
+    }
+    
+    .day-card:hover::before {
+      width: 8px;
+    }
+    
+    .day-card:active {
+      transform: scale(0.98);
+      background: #f8f9fa;
+    }
+    
+    .day-card.selected {
+      border-color: #4263eb;
+      background: #f0f4ff;
+      box-shadow: 0 8px 25px rgba(66,99,235,0.15);
+    }
+    
+    .day-card.today {
+      border-color: #40c057;
+    }
+    
+    .day-card.today::after {
+      content: 'HOJE';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #40c057;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 5px rgba(64,192,87,0.3);
+      z-index: 1;
+    }
+    
+    .day-card.selected::before {
+      width: 10px;
+      background: #4263eb;
+    }
+    
+    .day-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 15px;
+    }
+    
+    .day-name {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #343a40;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    
+    .day-name-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .day-date {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: #212529;
+      line-height: 1;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .status-indicators.inline {
+      margin-top: 0;
+      gap: 12px;
+      display: flex;
+      flex-shrink: 0;
+    }
+    
+    .status-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    
+    .status-dot:hover {
+      transform: scale(1.2);
+    }
+    
+    .status-dot.ok { 
+      background: #40c057; 
+      box-shadow: 0 0 0 5px rgba(64,192,87,0.2); 
+    }
+    .status-dot.warn { 
+      background: #ff922b; 
+      box-shadow: 0 0 0 5px rgba(255,146,43,0.2); 
+    }
+    .status-dot.bad { 
+      background: #fa5252; 
+      box-shadow: 0 0 0 5px rgba(250,82,82,0.2); 
+    }
+    
+    .cultos-count {
+      font-size: 1rem;
+      color: #6c757d;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    
+    /* ============================================
+       CABEÇALHO DO DIA SELECIONADO
+    ============================================ */
+    
+    .selected-date-header {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .selected-date-header:hover {
+      border-color: #4263eb;
+      transform: translateY(-2px);
+    }
+    
+    .selected-date-header h2 {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #212529;
+      line-height: 1.3;
+    }
+    
+    /* ============================================
+       LISTA DE CULTOS
+    ============================================ */
+    
+    .cultos-list {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+    
+    /* ============================================
+       CARD DO CULTO
+    ============================================ */
+    
+    .culto-card {
+      background: white;
+      border-radius: 24px;
+      padding: 35px 25px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      border-left: 10px solid #e9ecef;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .culto-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0;
+      background: linear-gradient(to right, rgba(66,99,235,0.05), transparent);
+      transition: width 0.3s ease;
+    }
+    
+    .culto-card:hover::before {
+      width: 100%;
+    }
+    
+    .culto-card.ok { border-left-color: #40c057; }
+    .culto-card.warn { border-left-color: #ff922b; }
+    .culto-card.bad { border-left-color: #fa5252; }
+    
+    .culto-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 25px;
+      gap: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .culto-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #000000;
+      flex: 1;
+      line-height: 1.2;
+      overflow-wrap: break-word;
+    }
+    
+    .status-badge {
+      font-size: 1rem;
+      font-weight: 800;
+      padding: 10px 20px;
+      border-radius: 30px;
+      white-space: nowrap;
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    
+    .status-badge:hover {
+      transform: scale(1.05);
+    }
+    
+    .status-badge.ok { background: #ebfbee; color: #2b8a3e; }
+    .status-badge.warn { background: #fff4e6; color: #e67700; }
+    .status-badge.bad { background: #ffe3e3; color: #c92a2a; }
+    
+    /* ============================================
+       DETALHES
+    ============================================ */
+    
+    .culto-details {
+      display: flex;
+      gap: 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    
+    /* ============================================
+       PENDÊNCIAS
+    ============================================ */
+    
+    .pendencies {
+      background: #fff9db;
+      border-radius: 18px;
+      padding: 25px;
+      margin-top: 25px;
+      border: 3px solid #ffd8a8;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+    
+    .pendencies:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px rgba(255, 146, 43, 0.2);
+    }
+    
+    .pendencies-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #e67700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .pendencies-list {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #5c940d;
+      line-height: 1.5;
+    }
+    
+    /* ============================================
+       BOTÃO DE AÇÃO
+    ============================================ */
+    
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .action-btn {
+      flex: 1;
+      width: 100%;
+      padding: 25px;
+      border-radius: 20px;
+      border: none;
+      font-size: 1.2rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: 85px;
+      user-select: none;
+    }
+    
+    .action-btn:active {
+      transform: scale(0.96);
+    }
+    
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(66,99,235,0.3);
+    }
+    
+    .action-btn.primary {
+      background: linear-gradient(135deg, #4263eb, #7048e8);
+      color: white;
+      box-shadow: 0 8px 25px rgba(66,99,235,0.3);
+    }
+    
+    .action-btn.primary:hover {
+      box-shadow: 0 12px 30px rgba(66,99,235,0.4);
+    }
+    
+    /* ============================================
+       ESTADO VAZIO
+    ============================================ */
+    
+    .empty-state {
+      background: white;
+      border-radius: 24px;
+      padding: 80px 30px;
+      text-align: center;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+      border: 2px dashed #e9ecef;
+      transition: all 0.3s ease;
+    }
+    
+    .empty-state:hover {
+      border-color: #4263eb;
+      transform: translateY(-2px);
+    }
+    
+    .empty-icon {
+      font-size: 80px;
+      margin-bottom: 30px;
+      opacity: 0.5;
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .empty-title {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #212529;
+      margin-bottom: 15px;
+    }
+    
+    .empty-message {
+      font-size: 1.1rem;
+      color: #6c757d;
+      line-height: 1.4;
+    }
+    
+    /* ============================================
+       BARRA INFERIOR
+    ============================================ */
+    
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-top: 3px solid #e9ecef;
+      display: flex;
+      padding: 20px 15px 30px;
+      gap: 15px;
+      z-index: 1000;
+      box-shadow: 0 -8px 30px rgba(0,0,0,0.15);
+      height: 230px;
+    }
+    
+    .nav-action {
+      flex: 1;
+      height: 90px;
+      border-radius: 22px;
+      border: none;
+      background: #f8f9fa;
+      color: #495057;
+      font-size: 1.05rem;
+      font-weight: 800;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 3px solid #e9ecef;
+      user-select: none;
+    }
+    
+    .nav-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Botão "Preencher Doxologia" gigante */
+    .nav-action.big {
+      height: 180px;
+      border-radius: 25px;
+      font-size: 1.8rem;
+      gap: 14px;
+      background: linear-gradient(135deg, #4263eb, #7048e8);
+      color: white;
+      border: none;
+    }
+    
+    .nav-action.loading {
+      filter: brightness(0.92);
+      transform: scale(0.98);
+      pointer-events: none;
+      opacity: 0.9;
+    }
+    
+    .nav-action.loading .nav-icon {
+      animation: spin 0.9s linear infinite;
+    }
+    
+    .nav-action.big .nav-icon {
+      font-size: 64px;
+      line-height: 1;
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    .nav-action:active {
+      transform: scale(0.96);
+    }
+    
+    .nav-action.primary {
+      background: linear-gradient(135deg, #4263eb, #7048e8);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 8px 25px rgba(66,99,235,0.35);
+    }
+    
+    .nav-action.primary:hover {
+      box-shadow: 0 12px 30px rgba(66,99,235,0.45);
+    }
+    
+    .nav-icon {
+      font-size: 32px;
+      transition: transform 0.3s ease;
+    }
+    
+    .nav-action:hover .nav-icon {
+      transform: scale(1.1);
+    }
+    
+    /* ============================================
+       MODAL DE VIEW CRONOGRAMA (STYLES INLINE)
+    ============================================ */
+    
+    #viewModal {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    #viewModal > div {
+      animation: slideUp 0.3s ease-out;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* ============================================
+       MEDIA QUERIES PARA DESKTOP
+    ============================================ */
+    
+    @media (min-width: 1024px) {
+      .desktop-reload-btn {
+        display: flex;
+      }
+      
+      .desktop-calendar {
+        display: block;
+      }
+      
+      .main-container {
+        margin-right: 420px;
+        max-width: calc(800px + 400px);
+      }
+      
+      .header-content {
+        max-width: calc(800px + 400px);
+      }
+      
+      .bottom-nav {
+        max-width: calc(800px + 400px);
+        margin: 0 auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+      }
+      
+      /* Ajustes de responsividade para desktop */
+      .day-card {
+        min-height: 100px;
+        padding: 25px;
+      }
+      
+      .culto-card {
+        padding: 30px;
+      }
+    }
+    
+    /* ============================================
+       RESPONSIVIDADE PARA TELAS MÉDIAS
+    ============================================ */
+    
+    @media (max-width: 768px) {
+      html {
+        font-size: 22px;
+      }
+      
+      .header-content {
+        flex-wrap: wrap;
+      }
+      
+      .app-info {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+      
+      .nav-controls {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .day-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 20px;
+      }
+      
+      .day-header {
+        width: 100%;
+      }
+      
+      .culto-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .status-badge {
+        align-self: flex-start;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .bottom-nav {
+        flex-direction: column;
+        height: auto;
+        padding: 15px;
+      }
+      
+      .nav-action {
+        height: 70px;
+        margin-bottom: 10px;
+      }
+      
+      .nav-action.big {
+        height: 100px;
+        font-size: 1.5rem;
+      }
+      
+      .nav-action.big .nav-icon {
+        font-size: 48px;
+      }
+    }
+    
+    /* ============================================
+       RESPONSIVIDADE PARA TELAS PEQUENAS
+    ============================================ */
+    
+    @media (max-width: 480px) {
+      html {
+        font-size: 20px;
+      }
+      
+      .header {
+        padding: 15px;
+      }
+      
+      .app-logo {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+      }
+      
+      .app-title h1 {
+        font-size: 1.2rem;
+      }
+      
+      .nav-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 24px;
+      }
+      
+      .day-card {
+        padding: 15px;
+        min-height: 90px;
+      }
+      
+      .day-name {
+        font-size: 1.8rem;
+      }
+      
+      .day-date {
+        font-size: 1.8rem;
+      }
+      
+      .culto-card {
+        padding: 20px 15px;
+      }
+      
+      .culto-title {
+        font-size: 1.2rem;
+      }
+      
+      .pendencies {
+        padding: 15px;
+      }
+      
+      .action-btn {
+        padding: 20px 15px;
+        font-size: 1rem;
+        min-height: 70px;
+      }
+      
+      .selected-date-header {
+        padding: 20px 15px;
+      }
+      
+      .selected-date-header h2 {
+        font-size: 1.1rem;
+      }
+    }
+    
+    /* ============================================
+       RESPONSIVIDADE PARA TELAS MUITO PEQUENAS
+    ============================================ */
+    
+    @media (max-width: 375px) {
+      html {
+        font-size: 18px;
+      }
+      
+      .day-card {
+        padding: 12px;
+      }
+      
+      .day-name {
+        font-size: 1.6rem;
+      }
+      
+      .day-date {
+        font-size: 1.6rem;
+      }
+      
+      .status-dot {
+        width: 18px;
+        height: 18px;
+      }
+      
+      .culto-details {
+        gap: 15px;
+        font-size: 1rem;
+      }
+      
+      .nav-action {
+        font-size: 0.95rem;
+      }
+      
+      .nav-action.big {
+        font-size: 1.3rem;
+      }
+      
+      .nav-action.big .nav-icon {
+        font-size: 40px;
+      }
+    }
+    
+    /* ============================================
+       PERFORMANCE PARA iOS
+    ============================================ */
+    
+    @supports (-webkit-touch-callout: none) {
+      .day-card,
+      .nav-btn,
+      .action-btn,
+      .nav-action {
+        -webkit-tap-highlight-color: rgba(66,99,235,0.1);
+      }
+      
+      body {
+        -webkit-overflow-scrolling: touch;
+      }
+    }
+    
+    /* ============================================
+       ANIMAÇÕES
+    ============================================ */
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes fadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+    
+    @keyframes slideUp {
+      from { 
+        transform: translateY(50px); 
+        opacity: 0; 
+      }
+      to { 
+        transform: translateY(0); 
+        opacity: 1; 
+      }
+    }
+    
+    .day-card,
+    .culto-card,
+    .event-item {
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    /* ============================================
+       ESTADOS DE CARREGAMENTO
+    ============================================ */
+    
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 8px;
+      color: transparent !important;
+    }
+    
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    
+    /* ============================================
+       UTILITÁRIOS
+    ============================================ */
+    
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+    .text-truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    /* ============================================
+       ESTILOS PARA IMPRESSÃO
+    ============================================ */
+    
+    @media print {
+      .bottom-nav,
+      .desktop-reload-btn,
+      .desktop-calendar,
+      .nav-controls {
+        display: none !important;
+      }
+      
+      body {
+        padding-bottom: 0;
+        background: white;
+      }
+      
+      .header {
+        position: static;
+        box-shadow: none;
+      }
+      
+      .culto-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- BOTÃO DE RELOAD DESKTOP (MUITO VISÍVEL) -->
+<button class="desktop-reload-btn" onclick="reloadPage()" title="Recarregar página (Desktop)">
+  🔄
+</button>
+
+<!-- CALENDÁRIO DESKTOP (MUITO VISÍVEL) -->
+<div class="desktop-calendar" id="desktopCalendar">
+  <div class="calendar-header">
+    <div class="calendar-title" id="calendarMonthLabel">Fevereiro 2026</div>
+    <div class="calendar-nav">
+      <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">←</button>
+      <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">→</button>
+    </div>
+  </div>
+  
+  <div class="calendar-weekdays">
+    <div class="weekday">D</div>
+    <div class="weekday">S</div>
+    <div class="weekday">T</div>
+    <div class="weekday">Q</div>
+    <div class="weekday">Q</div>
+    <div class="weekday">S</div>
+    <div class="weekday">S</div>
+  </div>
+  
+  <div class="calendar-days" id="calendarDays"></div>
+  
+  <div class="calendar-events">
+    <h4>📅 Eventos do Dia</h4>
+    <div id="calendarEventsList"></div>
+  </div>
+</div>
+
+<!-- MODAL DE VISUALIZAÇÃO DO CRONOGRAMA -->
+<div id="viewModal" style="display:none; position:fixed; inset:0; z-index:9999; background:#0b1220cc;">
+  <div style="position:absolute; inset:0; background:#fff; display:flex; flex-direction:column;">
+    
+    <div style="padding:12px 14px; border-bottom:1px solid #e5e7eb; display:flex; gap:10px; align-items:center;">
+      <button onclick="closeViewModal()" style="border:1px solid #e5e7eb; background:#fff; border-radius:10px; padding:10px 12px; font-weight:800;">←</button>
+      <div style="flex:1;">
+        <div id="vmTitle" style="font-weight:900;">Cronograma</div>
+        <div id="vmSub" style="color:#6b7280; font-size:.9rem;">Carregando…</div>
+      </div>
+      <button onclick="copyViewLink()" style="border:1px solid #e5e7eb; background:#fff; border-radius:10px; padding:10px 12px; font-weight:800;">📋</button>
+    </div>
+
+    <div id="vmBody" style="flex:1; overflow:auto; -webkit-overflow-scrolling:touch; padding:12px;">
+      <div id="vmMsg" style="color:#6b7280;">Carregando cronograma…</div>
+      <div id="vmMeta" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;"></div>
+      <div id="vmTables" style="margin-top:12px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<header class="header">
+  <div class="header-content">
+    <div class="app-info">
+      <div class="app-logo">📅</div>
+      <div class="app-title">
+        <h1 id="appName">Portal de Cultos </h1>
+        <div id="loadingStatus">
+          <span class="loading-spinner"></span>
+          <span>Carregando...</span>
+        </div>
+      </div>
+    </div>
+    <div class="nav-controls">
+      <button class="nav-btn" onclick="goToday()" title="Hoje">📅</button>
+      <button class="nav-btn refresh-btn" onclick="handleRefresh()" title="Atualizar" id="refreshBtn">
+        <span class="nav-icon">🔄</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="main-container">
+  
+  <section class="week-selector">
+    <div class="week-header">
+      <button class="nav-btn" onclick="changeWeek(-7)">←</button>
+      <div class="week-title">
+        <span class="month" id="weekMonthLabel">fevereiro</span>
+        <span class="range" id="weekRangeLabel">1 a 7</span>
+      </div>
+      <button class="nav-btn" onclick="changeWeek(7)">→</button>
+    </div>
+    
+    <div class="week-days" id="weekDays"></div>
+  </section>
+  
+  <section class="selected-date-header">
+    <h2 id="selectedDateText">segunda-feira, 26 de janeiro de 2026</h2>
+  </section>
+  
+  <div class="cultos-list" id="cultosList"></div>
+  
+</main>
+
+<nav class="bottom-nav">
+  <a href="#" id="navReservar" class="nav-action agendar">
+    <span class="nav-icon">➕</span>
+    <span>Agendar Culto</span>
+  </a>
+  <a href="#" id="navPreencher" class="nav-action primary big">
+    <span class="nav-icon">✏️</span>
+    <span>Preencher Doxologia</span>
+  </a>
+</nav>
+
+<script>
+  const BASE_URL = "<?= BASE_URL ?>";
+  const PIN_QS = "<?= PIN_QS ?>";
+  let BOOT = null;
+  let SNAP = { byDate: {} };
+  let selectedYmd = new Date().toISOString().split('T')[0];
+  let viewDate = new Date();
+  let calendarMonth = new Date().getMonth();
+  let calendarYear = new Date().getFullYear();
+  
+  // ========================
+  // HELPER FUNCTIONS
+  // ========================
+  
+  const ymd = (d) => {
+    const date = new Date(d);
+    return date.getFullYear() + '-' + 
+           String(date.getMonth() + 1).padStart(2,'0') + '-' + 
+           String(date.getDate()).padStart(2,'0');
+  };
+  
+  
+  function $(selector) {
+    return document.querySelector(selector);
+  }
+  
+  function getUrl(page, params = {}) {
+    let url = BASE_URL + '?p=' + encodeURIComponent(page) + (PIN_QS || '');
+
+    Object.keys(params).forEach(k => {
+      if (params[k] !== undefined && params[k] !== null && params[k] !== '') {
+        url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+      }
+    });
+
+    return url;
+  }
+  
+  function clog(level, msg, data) {
+    try {
+      console.log(`[${level}] ${msg}`, data || '');
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.api_clientLog(
+          level,
+          'HOME',
+          msg,
+          Object.assign({ 
+            ua: navigator.userAgent, 
+            timestamp: new Date().toISOString(),
+            viewport: `${window.innerWidth}x${window.innerHeight}` 
+          }, (data || {}))
+        );
+      }
+    } catch(e) {
+      console.error('Erro no log:', e);
+   }
+  }
+  
+  // ========================
+  // MODAL DE VIEW CRONOGRAMA
+  // ========================
+  
+  let _lastSid = '';
+  
+function closeViewModal() {
+  $('#viewModal').style.display = 'none';
+  document.body.style.overflow = '';
+  _lastSid = '';
+  
+  // Limpa qualquer intervalo de auto-refresh
+  if (window.modalRefreshInterval) {
+    clearInterval(window.modalRefreshInterval);
+    window.modalRefreshInterval = null;
+  }
+}
+  
+  function pill(icon, text) {
+    const d = document.createElement('div');
+    d.style.cssText = 'border:1px solid #e5e7eb; background:#fff; border-radius:999px; padding:8px 10px; font-weight:800; font-size:.9rem; display:inline-flex; gap:6px; align-items:center;';
+    d.innerHTML = `<span>${icon}</span><span>${text}</span>`;
+    return d;
+  }
+  
+  function renderCronogramaTables(data) {
+    const items = data.items || [];
+    if (!items.length) {
+      $('#vmTables').innerHTML = '<div style="color:#6b7280; text-align:center; padding:20px;">Nenhum item no cronograma.</div>';
+      return;
+    }
+
+    // Agrupa por secao_pdf
+    const groups = {};
+    items.forEach(it => {
+      const k = it.secao_pdf || 'OUTROS';
+      (groups[k] = groups[k] || []).push(it);
+    });
+
+    let html = '';
+    Object.keys(groups).forEach(k => {
+      const list = groups[k];
+      const sectionTitle = k.replace(/_/g, ' ').toUpperCase();
+      
+      html += `
+        <div style="margin:20px 0 10px; font-weight:900; font-size:1.1rem; color:#374151; padding-bottom:5px; border-bottom:2px solid #e5e7eb;">
+          ${sectionTitle}
+        </div>
+        <div style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; margin-bottom:20px;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="background:#f8fafc; color:#4b5563; text-transform:uppercase; font-size:.75rem; letter-spacing:0.5px;">
+                <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb; width:80px;">Início</th>
+                <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb; width:80px;">Fim</th>
+                <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb;">Momento</th>
+                <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb; width:120px;">Responsável</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map(it => `
+                <tr style="transition:background-color 0.2s;">
+                  <td style="padding:12px; border-bottom:1px solid #e5e7eb; font-weight:900; color:#1f2937; white-space:nowrap;">${it.inicio || '--:--'}</td>
+                  <td style="padding:12px; border-bottom:1px solid #e5e7eb; color:#6b7280; white-space:nowrap;">${it.fim || '--:--'}</td>
+                  <td style="padding:12px; border-bottom:1px solid #e5e7eb;">
+                    <div style="font-weight:600; color:#111827;">${it.titulo || 'Sem título'}</div>
+                    ${it.detalhes ? `<div style="font-size:.85rem; color:#6b7280; margin-top:4px;">${it.detalhes}</div>` : ''}
+                  </td>
+                  <td style="padding:12px; border-bottom:1px solid #e5e7eb;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="color:#4f46e5; font-weight:600;">${it.responsavel || '--'}</span>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    });
+
+    $('#vmTables').innerHTML = html;
+  }
+  
+  function copyViewLink() {
+    if (!_lastSid) {
+      clog('WARN', 'Tentativa de copiar link sem SID');
+      return;
+    }
+    
+    const url = `${BASE_URL}?p=view${PIN_QS}&sid=${encodeURIComponent(_lastSid)}`;
+    const btn = $('[onclick="copyViewLink()"]');
+    const originalText = btn.innerHTML;
+    
+    navigator.clipboard?.writeText(url).then(() => {
+      clog('INFO', 'Link copiado', { url });
+      
+      // Feedback visual
+      btn.innerHTML = '✅ Copiado!';
+      btn.style.backgroundColor = '#10b981';
+      btn.style.color = 'white';
+      btn.style.borderColor = '#10b981';
+      
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.backgroundColor = '';
+        btn.style.color = '';
+        btn.style.borderColor = '#e5e7eb';
+      }, 1500);
+      
+    }).catch(err => {
+      clog('WARN', 'Clipboard falhou', { url, err });
+      
+      // Fallback para navegadores antigos
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        const success = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (success) {
+          btn.innerHTML = '✅';
+          setTimeout(() => btn.innerHTML = originalText, 1500);
+        } else {
+          btn.innerHTML = '❌';
+          setTimeout(() => btn.innerHTML = originalText, 1500);
+        }
+      } catch (fallbackErr) {
+        clog('ERROR', 'Fallback copy também falhou', { err: fallbackErr });
+      }
+    });
+  }
+  function createActionButtons(sid) {
+  return `
+    <div style="display:flex; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb; flex-wrap:wrap;">
+      <button onclick="printCronograma()" style="flex:1; min-width:120px; padding:12px; border-radius:12px; 
+                border:1px solid #e5e7eb; background:#fff; font-weight:800; cursor:pointer;
+                display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+        🖨️ Imprimir
+      </button>
+      <button onclick="shareWhatsApp('${sid}')" style="flex:1; min-width:120px; padding:12px; border-radius:12px; 
+                border:none; background:#25d366; color:white; font-weight:800; cursor:pointer;
+                display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+        📱 WhatsApp
+      </button>
+      <a href="${BASE_URL}?p=view${PIN_QS}&sid=${encodeURIComponent(sid)}" 
+         target="_blank" 
+         style="flex:1; min-width:120px; padding:12px; border-radius:12px; 
+                border:1px solid #3b82f6; background:#f0f4ff; color:#1e40af; 
+                font-weight:800; cursor:pointer; text-decoration:none;
+                display:flex; align-items:center; justify-content:center; gap:8px; 
+                transition:all 0.2s;">
+        🔗 Nova Aba
+      </a>
+    </div>
+  `;
+}
+
+// ========================
+// FUNÇÕES DA VIEW ADAPTADAS PARA MODAL
+// ========================
+
+// Converte horário HH:MM para minutos do dia
+function timeToMinutes(timeStr) {
+  if (!timeStr || timeStr === '--:--') return 0;
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+// Verifica status do culto
+function checkCultoStatus(startTime, endTime) {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = timeToMinutes(startTime);
+  const endMinutes = timeToMinutes(endTime);
+  
+  if (startMinutes === 0 || endMinutes === 0) return 'indefinido';
+  
+  if (currentMinutes < startMinutes - 30) return 'aguardando';
+  if (currentMinutes >= startMinutes && currentMinutes <= endMinutes) return 'ao-vivo';
+  if (currentMinutes > endMinutes) return 'finalizado';
+  return 'prestes-iniciar';
+}
+
+// Timeline dinâmica para o modal
+function createTimelineForModal(data) {
+  const startTime = data.inicio || '--:--';
+  const endTime = data.fim_previsto || '--:--';
+  
+  if (!startTime || !endTime || startTime === '--:--' || endTime === '--:--') {
+    return '';
+  }
+  
+  const status = checkCultoStatus(startTime, endTime);
+  const isLive = status === 'ao-vivo' || status === 'prestes-iniciar';
+  
+  // Atualiza hora atual
+  const now = new Date();
+  const currentTime = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+  
+  // Calcula porcentagem do progresso se estiver ao vivo
+  let progressPercent = 0;
+  let nowPosition = 0;
+  
+  if (isLive) {
+    const startMinutes = timeToMinutes(startTime);
+    const endMinutes = timeToMinutes(endTime);
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    const totalDuration = endMinutes - startMinutes;
+    const elapsed = currentMinutes - startMinutes;
+    progressPercent = totalDuration > 0 ? (elapsed / totalDuration) * 100 : 0;
+    progressPercent = Math.max(0, Math.min(100, progressPercent));
+    nowPosition = progressPercent;
+  }
+  
+  // Encontra horário do sermão se existir
+  const sermao = data.items?.find(item => 
+    item.momento_id?.includes('SERMAO') || 
+    item.titulo?.toLowerCase().includes('sermão') ||
+    item.titulo?.toLowerCase().includes('pregação')
+  );
+  
+  let sermaoMarker = '';
+  if (sermao && sermao.inicio && startTime !== '--:--') {
+    const startMinutes = timeToMinutes(startTime);
+    const endMinutes = timeToMinutes(endTime);
+    const sermaoMinutes = timeToMinutes(sermao.inicio);
+    
+    const totalDuration = endMinutes - startMinutes;
+    const sermaoPosition = totalDuration > 0 ? ((sermaoMinutes - startMinutes) / totalDuration) * 100 : 0;
+    
+    if (sermaoPosition >= 0 && sermaoPosition <= 100) {
+      sermaoMarker = `
+        <div style="position:absolute; left:${sermaoPosition}%; top:-20px; transform:translateX(-50%); 
+                    font-size:0.75rem; color:#6b7280; white-space:nowrap;">
+          ${sermao.inicio}
+        </div>
+        <div style="position:absolute; left:${sermaoPosition}%; top:12px; width:6px; height:6px;
+                    border-radius:50%; background:#ff922b; transform:translateX(-50%);"></div>
+      `;
+    }
+  }
+  
+  // Cria timeline
+  return `
+    <div style="margin:20px 0 30px 0;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px; 
+                  font-size:0.9rem; color:#6b7280; font-weight:600;">
+        <span>🏁 Início: ${startTime}</span>
+        <span>
+          Agora: ${currentTime}
+          ${isLive ? '<span style="margin-left:8px; padding:2px 8px; background:#dcfce7; color:#166534; border-radius:12px; font-size:0.8rem;">AO VIVO</span>' : ''}
+        </span>
+        <span>🏁 Fim: ${endTime}</span>
+      </div>
+      
+      <div style="height:10px; background:#e5e7eb; border-radius:5px; position:relative; overflow:hidden;">
+        <!-- Progresso -->
+        <div style="height:100%; width:${isLive ? progressPercent : 100}%; 
+                    background:${isLive ? 'linear-gradient(90deg, #22c55e, #16a34a)' : 'linear-gradient(90deg, #3b82f6, #60a5fa)'}; 
+                    border-radius:5px; transition:width 0.3s ease;">
+        </div>
+        
+        <!-- Marcador "Agora" -->
+        ${isLive ? `
+          <div style="position:absolute; top:-8px; left:${nowPosition}%; width:24px; height:24px; 
+                      border-radius:50%; background:#fff; border:3px solid #dc2626; 
+                      transform:translateX(-50%); box-shadow:0 2px 8px rgba(220,38,38,0.3);
+                      animation:pulse 2s infinite;"></div>
+        ` : ''}
+        
+        <!-- Marcador do sermão -->
+        ${sermaoMarker}
+      </div>
+      
+      <!-- Status do culto -->
+      <div style="margin-top:16px; padding:12px 16px; border-radius:12px; 
+                  ${status === 'ao-vivo' ? 'background:#dcfce7; color:#166534; border:1px solid #22c55e; animation:pulse-bg 2s infinite;' : 
+                    status === 'aguardando' ? 'background:#fef3c7; color:#92400e; border:1px solid #fbbf24;' :
+                    status === 'finalizado' ? 'background:#e5e7eb; color:#4b5563; border:1px solid #9ca3af;' :
+                    'background:#f0f4ff; color:#1e40af; border:1px solid #3b82f6;'}">
+        <strong>
+          ${status === 'ao-vivo' ? '🔴 AO VIVO AGORA:' :
+            status === 'aguardando' ? '⏳ Aguardando:' :
+            status === 'finalizado' ? '✅ Concluído:' :
+            '🎯 Prestes a começar:'}
+        </strong>
+        ${status === 'ao-vivo' ? ' O culto está acontecendo' :
+          status === 'aguardando' ? ' O culto ainda não começou' :
+          status === 'finalizado' ? ' O culto já terminou' :
+          ' O culto iniciará em breve'}
+      </div>
+    </div>
+  `;
+}
+
+// Tabelas melhoradas com classes CSS
+function createEnhancedTable(items, sectionTitle) {
+  if (!items || !items.length) return '';
+  
+  const types = {
+    'music': { icon: '🎵', color: '#f59e0b', bg: '#fffbeb' },
+    'preach': { icon: '📖', color: '#1d4ed8', bg: '#eff6ff' },
+    'prayer': { icon: '🙏', color: '#059669', bg: '#ecfdf5' },
+    'special': { icon: '⭐', color: '#7c3aed', bg: '#f5f3ff' }
+  };
+  
+  let html = `
+    <div style="margin:14px 0 8px; font-weight:900; font-size:1.1rem; color:#374151; 
+                padding-bottom:5px; border-bottom:2px solid #e5e7eb;">
+      ${sectionTitle}
+    </div>
+    <div style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; margin-bottom:20px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f8fafc; color:#4b5563; text-transform:uppercase; font-size:.75rem; letter-spacing:0.5px;">
+            <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb; width:80px;">Início</th>
+            <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb; width:80px;">Fim</th>
+            <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb;">Momento</th>
+            <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb; width:120px;">Responsável</th>
+            <th style="text-align:left; padding:12px; border-bottom:1px solid #e5e7eb; width:80px;">Tipo</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  items.forEach((it, index) => {
+    // Determina tipo baseado no conteúdo
+    let tipo = '';
+    let tipoIcon = '';
+    let tipoColor = '#6b7280';
+    let tipoBg = '#f9fafb';
+    
+    const tituloLower = (it.titulo || '').toLowerCase();
+    const momentoId = (it.momento_id || '').toLowerCase();
+    
+    if (tituloLower.includes('música') || tituloLower.includes('louvor') || 
+        tituloLower.includes('hino') || momentoId.includes('musica')) {
+      tipo = 'music';
+      tipoIcon = '🎵';
+      tipoColor = '#92400e';
+      tipoBg = '#fffbeb';
+    } else if (tituloLower.includes('sermão') || tituloLower.includes('pregação') || 
+               tituloLower.includes('mensagem') || momentoId.includes('sermao')) {
+      tipo = 'preach';
+      tipoIcon = '📖';
+      tipoColor = '#1e40af';
+      tipoBg = '#eff6ff';
+    } else if (tituloLower.includes('oração') || tituloLower.includes('intercessão') || 
+               tituloLower.includes('bênção') || momentoId.includes('oracao')) {
+      tipo = 'prayer';
+      tipoIcon = '🙏';
+      tipoColor = '#065f46';
+      tipoBg = '#ecfdf5';
+    } else if (tituloLower.includes('especial') || tituloLower.includes('apresentação') || 
+               tituloLower.includes('testemunho') || tituloLower.includes('ofício')) {
+      tipo = 'special';
+      tipoIcon = '⭐';
+      tipoColor = '#5b21b6';
+      tipoBg = '#f5f3ff';
+    }
+    
+    const isCondicional = it.condicional === true || it.condicional === 'true';
+    const condicionalIcon = isCondicional ? '<span style="margin-left:4px; opacity:0.7;" title="Condicional">⚠️</span>' : '';
+    
+    html += `
+      <tr style="transition:background-color 0.2s; ${index % 2 === 0 ? 'background:#fafafa;' : ''}">
+        <td style="padding:12px; border-bottom:1px solid #e5e7eb; font-weight:900; color:#1f2937; white-space:nowrap;">
+          ${it.inicio || '--:--'}
+        </td>
+        <td style="padding:12px; border-bottom:1px solid #e5e7eb; color:#6b7280; white-space:nowrap;">
+          ${it.fim || '--:--'}
+        </td>
+        <td style="padding:12px; border-bottom:1px solid #e5e7eb;">
+          <div style="font-weight:600; color:#111827;">${it.titulo || 'Sem título'}</div>
+          ${it.detalhes ? `<div style="font-size:.85rem; color:#6b7280; margin-top:4px;">${it.detalhes}</div>` : ''}
+          ${condicionalIcon}
+        </td>
+        <td style="padding:12px; border-bottom:1px solid #e5e7eb;">
+          <div style="color:#4f46e5; font-weight:600;">${it.responsavel || '--'}</div>
+        </td>
+        <td style="padding:12px; border-bottom:1px solid #e5e7eb;">
+          ${tipo ? `
+            <span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; 
+                         border-radius:12px; font-size:0.75rem; font-weight:800; 
+                         background:${tipoBg}; color:${tipoColor}; border:1px solid ${tipoColor}20;">
+              ${tipoIcon} ${tipo === 'music' ? 'Música' : 
+                          tipo === 'preach' ? 'Pregação' : 
+                          tipo === 'prayer' ? 'Oração' : 'Especial'}
+            </span>
+          ` : ''}
+        </td>
+      </tr>
+    `;
+  });
+  
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+  
+  return html;
+}
+
+// Botões de ação para o modal
+function createActionButtons(sid) {
+  return `
+    <div style="display:flex; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid #e5e7eb; flex-wrap:wrap;">
+      <button onclick="printCronograma()" style="flex:1; min-width:120px; padding:12px; border-radius:12px; 
+                border:1px solid #e5e7eb; background:#fff; font-weight:800; cursor:pointer;
+                display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+        🖨️ Imprimir
+      </button>
+      <button onclick="shareWhatsApp('${sid}')" style="flex:1; min-width:120px; padding:12px; border-radius:12px; 
+                border:none; background:#25d366; color:white; font-weight:800; cursor:pointer;
+                display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+        📱 WhatsApp
+      </button>
+      <button onclick="exportPDF()" style="flex:1; min-width:120px; padding:12px; border-radius:12px; 
+                border:1px solid #e5e7eb; background:#fff; font-weight:800; cursor:pointer;
+                display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+        📄 PDF
+      </button>
+    </div>
+  `;
+}
+
+// ========================
+// FUNÇÕES DE AÇÃO DO MODAL
+// ========================
+
+function printCronograma() {
+  const modalContent = $('#viewModal > div').cloneNode(true);
+  const actionButtons = modalContent.querySelector('div[style*="border-top:1px solid #e5e7eb"]');
+  if (actionButtons) actionButtons.remove();
+  
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Cronograma do Culto</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f5f5f5; }
+        @media print {
+          .no-print { display: none; }
+          body { font-size: 12pt; }
+        }
+      </style>
+    </head>
+    <body>
+      ${modalContent.innerHTML}
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  setTimeout(() => printWindow.print(), 500);
+}
+
+function shareWhatsApp(sid) {
+  if (!sid) return;
+  const title = $('#vmTitle').textContent || 'Cronograma do Culto';
+  const date = $('#vmSub').textContent.split('•')[0]?.trim() || '';
+  const url = `${BASE_URL}?p=view${PIN_QS}&sid=${encodeURIComponent(sid)}`;
+  const text = `📋 ${title} ${date}\n\nConfira o cronograma completo:\n${url}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function exportPDF() {
+  showToast('🚀 Em breve: Exportação para PDF');
+}
+
+function showToast(message) {
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.cssText = `
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1f2937; color: white; padding: 12px 24px;
+    border-radius: 8px; font-weight: 600; z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// ========================
+// MODAL COMPLETO ATUALIZADO
+// ========================
+
+function openViewModal(sid) {
+  sid = String(sid || '').trim();
+  if (!sid) return;
+
+  _lastSid = sid;
+  $('#viewModal').style.display = 'block';
+  $('#vmMsg').textContent = 'Carregando cronograma…';
+  $('#vmTables').innerHTML = '';
+  $('#vmMeta').innerHTML = '';
+  $('#vmTitle').textContent = 'Cronograma';
+  $('#vmSub').textContent = 'Carregando…';
+
+  google.script.run
+    .withSuccessHandler(data => {
+      $('#vmMsg').textContent = '';
+      // data.titulo agora vem do backend formatado
+      $('#vmTitle').textContent = data.titulo || 'Cronograma do Culto';
+      $('#vmSub').textContent = `${data.data} • Início: ${data.inicio} • Fim: ${data.fim_previsto}`;
+
+      // 1. Renderiza a NOVA FICHA TÉCNICA (Cabeçalho)
+      renderFichaTecnica(data.cabecalho);
+
+      // 2. Adiciona os Pills de meta
+      const metaContainer = $('#vmMeta');
+      if (data.inicio) metaContainer.appendChild(pill('⏰', data.inicio));
+      if (data.total_min) metaContainer.appendChild(pill('⌛', data.total_min + ' min'));
+      if (data.items?.length) metaContainer.appendChild(pill('📋', data.items.length + ' momentos'));
+
+      const container = $('#vmTables');
+        container.insertAdjacentHTML('beforeend', createTimelineForModal(data));
+        renderEnhancedCronogramaTables(data);
+        container.insertAdjacentHTML('beforeend', createActionButtons(sid));
+
+      document.body.style.overflow = 'hidden';
+      addModalAnimations();
+    })
+    .withFailureHandler(err => {
+      $('#vmMsg').textContent = '❌ Erro: ' + (err.message || err);
+    })
+    .api_getCronograma(sid);
+}
+
+/**
+ * RENDERIZA A FICHA TÉCNICA NO TOPO DO MODAL
+ */
+function renderFichaTecnica(cabecalho) {
+  if (!cabecalho) return;
+  const info = cabecalho;
+  const esc = cabecalho.escalas;
+
+  const html = `
+    <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px; padding:16px; margin-bottom:20px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+        <div>
+          <div style="font-size:0.7rem; text-transform:uppercase; color:#6b7280; font-weight:800;">Tema do Culto</div>
+          <div style="font-weight:900; color:#1e40af; font-size:1.1rem;">${info.tema}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:0.7rem; text-transform:uppercase; color:#6b7280; font-weight:800;">Pregador(a)</div>
+          <div style="font-weight:700; color:#111827;">${info.pregador}</div>
+        </div>
+      </div>
+      
+      <div style="display:flex; flex-wrap:wrap; gap:10px; padding-top:12px; border-top:1px dashed #cbd5e1;">
+        ${info.ministro_louvor !== 'Não informado' ? infoItem('🎤 Ministro', info.ministro_louvor) : ''}
+        ${info.equipe_louvor !== 'Não informado' ? infoItem('🎸 Equipe', info.equipe_louvor) : ''}
+        ${info.anciao_responsavel !== 'Não informado' ? infoItem('👔 Ancião', info.anciao_responsavel) : ''}
+      </div>
+
+      <div style="margin-top:15px; background:#fff; border-radius:8px; padding:10px; border:1px solid #f1f5f9;">
+        <div style="font-size:0.65rem; text-transform:uppercase; color:#94a3b8; font-weight:800; margin-bottom:8px;">Escalas de Apoio</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; font-size:0.85rem;">
+          <div style="color:#475569;">🔊 Som: <b>${esc.som?.resp1 || '--'}</b></div>
+          <div style="color:#475569;">💻 Mídia: <b>${esc.midia?.resp1 || '--'}</b></div>
+          <div style="color:#475569;">🤝 Diaconato: <b>${esc.diaconato?.resp1 || '--'}</b></div>
+          <div style="color:#475569;">🎬 Transmissão: <b>${esc.midia?.resp2 || '--'}</b></div>
+        </div>
+      </div>
+    </div>
+  `;
+  $('#vmTables').insertAdjacentHTML('afterbegin', html);
+}
+
+function infoItem(label, val) {
+  return `<div style="background:#fff; border:1px solid #e2e8f0; padding:4px 10px; border-radius:8px; font-size:0.8rem; color:#475569;">
+    <span style="opacity:0.8;">${label}:</span> <b>${val}</b>
+  </div>`;
+}
+
+function renderEnhancedCronogramaTables(data) {
+  const items = data.items || [];
+  if (!items.length) {
+    $('#vmTables').innerHTML += '<div style="color:#6b7280; text-align:center; padding:20px;">Nenhum item no cronograma.</div>';
+    return;
+  }
+
+  // Agrupa por secao_pdf
+  const groups = {};
+  items.forEach(it => {
+    const k = it.secao_pdf || 'OUTROS';
+    (groups[k] = groups[k] || []).push(it);
+  });
+
+  // Renderiza cada grupo
+  Object.keys(groups).forEach(k => {
+    const list = groups[k];
+    const sectionTitle = getSectionTitle(k);
+    const sectionIcon = getSectionIcon(k);
+    
+    const tableHTML = createEnhancedTable(list, `${sectionIcon} ${sectionTitle}`);
+    $('#vmTables').innerHTML += tableHTML;
+  });
+}
+
+function getSectionTitle(sectionKey) {
+  const titles = {
+    'ESCOLA_SABATINA': 'Escola Sabatina',
+    'CULTO_DIVINO': 'Culto Divino',
+    'MUSICAIS': 'Momentos Musicais',
+    'PREACHING': 'Pregação',
+    'PRAYER': 'Orações',
+    'OUTROS': 'Outros Momentos'
+  };
+  return titles[sectionKey] || sectionKey.replace(/_/g, ' ').toUpperCase();
+}
+
+function getSectionIcon(sectionKey) {
+  const icons = {
+    'ESCOLA_SABATINA': '🎓',
+    'CULTO_DIVINO': '⛪',
+    'MUSICAIS': '🎵',
+    'PREACHING': '📖',
+    'PRAYER': '🙏',
+    'OUTROS': '📋'
+  };
+  return icons[sectionKey] || '📋';
+}
+
+function addModalAnimations() {
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(220,38,38,0); }
+      100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
+    }
+    
+    @keyframes pulse-bg {
+      0%, 100% { background-color: #dcfce7; }
+      50% { background-color: #bbf7d0; }
+    }
+    
+    #viewModal button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    #viewModal button:active {
+      transform: translateY(0);
+    }
+  `;
+  document.head.appendChild(style);
+}
+  // ========================
+  // UI CONTROLS
+  // ========================
+  
+  function animateAgendarButton() {
+    const agendarBtn = document.getElementById('navReservar');
+    if (agendarBtn) {
+      agendarBtn.classList.add('clicked');
+      setTimeout(() => {
+        agendarBtn.classList.remove('clicked');
+      }, 600);
+    }
+  }
+  
+  function handleRefresh() {
+    const refreshBtn = document.getElementById('refreshBtn');
+    if (refreshBtn) {
+      refreshBtn.classList.add('rotating');
+      setTimeout(() => {
+        refreshBtn.classList.remove('rotating');
+      }, 1000);
+    }
+    
+    // Mostrar mensagem de carregamento
+    const loadingEl = document.getElementById('loadingStatus');
+    if (loadingEl) {
+      loadingEl.innerHTML = '<span class="loading-spinner"></span> Atualizando...';
+    }
+    
+    loadSnapshot();
+  }
+  
+  function reloadPage() {
+    location.reload();
+  }
+  
+  // ========================
+  // CALENDAR FUNCTIONS
+  // ========================
+  
+  function renderCalendar() {
+    const container = document.getElementById('calendarDays');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const firstDay = new Date(calendarYear, calendarMonth, 1);
+    const lastDay = new Date(calendarYear, calendarMonth + 1, 0);
+    const firstDayIndex = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    
+    // Atualiza label do mês
+    const monthLabel = document.getElementById('calendarMonthLabel');
+    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    monthLabel.textContent = `${monthNames[calendarMonth]} ${calendarYear}`;
+    
+    // Dias em branco no início
+    for (let i = 0; i < firstDayIndex; i++) {
+      const emptyDay = document.createElement('div');
+      emptyDay.className = 'calendar-day empty';
+      container.appendChild(emptyDay);
+    }
+    
+    // Dias do mês
+    const today = ymd(new Date());
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(calendarYear, calendarMonth, day);
+      const dateStr = ymd(date);
+      const isSelected = dateStr === selectedYmd;
+      const isToday = dateStr === today;
+      const events = SNAP.byDate[dateStr] || [];
+      const hasEvents = events.length > 0;
+      
+      const dayElement = document.createElement('div');
+      dayElement.className = `calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''} ${hasEvents ? 'has-events' : ''}`;
+      dayElement.textContent = day;
+      
+      dayElement.addEventListener('click', () => {
+        selectDay(dateStr);
+        updateCalendarSelection(dateStr);
+      });
+      
+      container.appendChild(dayElement);
+    }
+    
+    renderCalendarEvents();
+  }
+  
+  function updateCalendarSelection(dateStr) {
+    const days = document.querySelectorAll('.calendar-day:not(.empty)');
+    days.forEach(day => day.classList.remove('selected'));
+    
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const daysElements = document.querySelectorAll('.calendar-day:not(.empty)');
+    
+    daysElements.forEach(element => {
+      if (parseInt(element.textContent) === day) {
+        element.classList.add('selected');
+      }
+    });
+    
+    renderCalendarEvents();
+  }
+  
+  function changeCalendarMonth(delta) {
+    calendarMonth += delta;
+    
+    if (calendarMonth < 0) {
+      calendarMonth = 11;
+      calendarYear--;
+    } else if (calendarMonth > 11) {
+      calendarMonth = 0;
+      calendarYear++;
+    }
+    
+    renderCalendar();
+  }
+  
+  function renderCalendarEvents() {
+    const container = document.getElementById('calendarEventsList');
+    if (!container) return;
+    
+    const events = SNAP.byDate[selectedYmd] || [];
+    
+    if (events.length === 0) {
+      container.innerHTML = '<div style="color:#6b7280; text-align:center; padding:20px;">Nenhum culto agendado</div>';
+      return;
+    }
+    
+    container.innerHTML = events.map(event => {
+      const p = getPendencias(event);
+      const status = p.todosOk ? 'ok' : (event.preenchidos?.length ? 'warn' : 'bad');
+      
+      return `
+        <div class="event-item" onclick="selectDay('${selectedYmd}')">
+          <div class="event-time">${event.hora || '--:--'}</div>
+          <div class="event-title">${event.titulo || 'Culto'}</div>
+          <div class="event-status ${status}" title="${p.todosOk ? 'Completo' : (event.preenchidos?.length ? 'Pendente' : 'Não iniciado')}"></div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  // ========================
+  // CORE FUNCTIONS
+  // ========================
+  
+  function getPendencias(sessao) {
+    if (!BOOT || !BOOT.sections) return { msg: '', todosOk: false };
+    const templateId = sessao.templateId || '';
+    const jaPreenchidos = sessao.preenchidos || [];
+    
+    const obrigatorias = BOOT.sections.filter(sec => {
+      const req = String(sec.requiredFor || '').toUpperCase();
+      return req.includes(templateId.toUpperCase()) || req === '' || req === 'TODOS';
+    });
+    
+    if (obrigatorias.length === 0) return { msg: '', todosOk: true };
+    
+    const faltantes = obrigatorias.filter(sec => !jaPreenchidos.includes(sec.id));
+    if (faltantes.length === 0) return { msg: '', todosOk: true };
+    
+    return { 
+      msg: faltantes.map(f => f.nome).join(', '), 
+      todosOk: false, 
+      count: faltantes.length 
+    };
+  }
+  
+  function getStatusInfo(list) {
+    if (!list || !list.length) return { dots: [], overall: null };
+    
+    const dots = list.map(s => {
+      const p = getPendencias(s);
+      if (p.todosOk) return 'ok';
+      return (s.preenchidos && s.preenchidos.length > 0) ? 'warn' : 'bad';
+    });
+    
+    let overall = 'ok';
+    if (dots.includes('bad')) overall = 'bad';
+    else if (dots.includes('warn')) overall = 'warn';
+    
+    return { dots, overall };
+  }
+  
+  function render() {
+    renderWeekDays();
+    renderCultos();
+    renderCalendar();
+    updateNav();
+  }
+  
+  function renderWeekDays() {
+    const container = document.getElementById('weekDays');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    const start = new Date(viewDate);
+    start.setDate(start.getDate() - start.getDay());
+    
+    document.getElementById('weekMonthLabel').textContent = 
+      viewDate.toLocaleDateString('pt-BR', {month:'long'}).toLowerCase();
+    
+    const end = new Date(start); 
+    end.setDate(end.getDate() + 6);
+    document.getElementById('weekRangeLabel').textContent = 
+      `${start.getDate()} a ${end.getDate()}`;
+    
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start); 
+      d.setDate(d.getDate() + i);
+      const current = ymd(d);
+      const list = SNAP.byDate[current] || [];
+      const status = getStatusInfo(list);
+      
+      const dayCard = document.createElement('div');
+      dayCard.className = `day-card ${current === selectedYmd ? 'selected' : ''} ${current === ymd(new Date()) ? 'today' : ''}`;
+      
+      const dayName = d.toLocaleDateString('pt-BR', {weekday:'short'}).replace('.','').toUpperCase();
+      
+      dayCard.innerHTML = `
+        <div class="day-info">
+          <div class="day-header">
+            <div class="day-name-row">
+              <div class="day-name">${dayName}</div>
+                <div class="day-date">${d.getDate()}</div>
+          </div>
+          
+          ${status.dots.length > 0 ? `
+            <div class="status-indicators inline">
+              ${status.dots.map(dot => `<div class="status-dot ${dot}" title="${dot === 'ok' ? 'Completo' : (dot === 'warn' ? 'Parcial' : 'Não iniciado')}"></div>`).join('')}
+            </div>
+          ` : ''}
+          
+          ${list.length > 0 ? `
+            <div class="cultos-count">${list.length} culto${list.length > 1 ? 's' : ''} agendado${list.length > 1 ? 's' : ''}</div>
+          ` : ''}
+        </div>
+      `;
+      
+      dayCard.addEventListener('click', () => selectDay(current));
+      container.appendChild(dayCard);
+    }
+  }
+  
+  function renderCultos() {
+    const container = document.getElementById('cultosList');
+    if (!container) return;
+    
+    const list = SNAP.byDate[selectedYmd] || [];
+    
+    const dateObj = new Date(selectedYmd + 'T00:00:00');
+    document.getElementById('selectedDateText').textContent = 
+      dateObj.toLocaleDateString('pt-BR', {
+        weekday:'long', 
+        day:'numeric', 
+        month:'long',
+        year: 'numeric'
+      });
+    
+    if (list.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📅</div>
+          <div class="empty-title">Nenhum culto agendado</div>
+          <div class="empty-message">Toque em "Agendar Culto" abaixo para criar um novo</div>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = list.map(s => {
+      const p = getPendencias(s);
+      const status = p.todosOk ? 'ok' : (s.preenchidos?.length ? 'warn' : 'bad');
+      const statusLabel = p.todosOk ? 'Completo' : (s.preenchidos?.length ? 'Pendente' : 'Não Iniciado');
+      
+      return `
+        <div class="culto-card ${status}">
+          <div class="culto-header">
+            <div class="culto-title">${s.titulo || 'Culto'}</div>
+            <span class="status-badge ${status}">${statusLabel}</span>
+          </div>
+          
+          <div class="culto-details">
+            <div class="detail-item">
+              <span>🕒</span>
+              <span>${s.hora || '--:--'}</span>
+            </div>
+            <div class="detail-item">
+              <span>👤</span>
+              <span>${s.deptoDono || 'Geral'}</span>
+            </div>
+            <div class="detail-item">
+              <span>📝</span>
+              <span>ID: ${s.sessaoId || s.id || 'N/A'}</span>
+            </div>
+          </div>
+          
+          ${!p.todosOk ? `
+            <div class="pendencies">
+              <div class="pendencies-title">
+                <span>⚠️</span>
+                <span>Falta preencher (${p.count}):</span>
+              </div>
+              <div class="pendencies-list">${p.msg}</div>
+            </div>
+          ` : ''}
+          
+          <div class="action-buttons">
+            <button class="action-btn primary"
+              onclick="openViewModal('${s.sessaoId || s.id}')"
+              title="Ver cronograma completo">
+              <span>👁️</span>
+              <span>Ver Cronograma</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  function selectDay(date) {
+    selectedYmd = date;
+    viewDate = new Date(date + 'T00:00:00');
+    render();
+    
+    setTimeout(() => {
+      const target = document.querySelector('.selected-date-header');
+      if (target) {
+        const headerHeight = document.querySelector('.header').offsetHeight;
+        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = targetPosition - headerHeight - 20;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }, 150);
+  }
+  
+  function changeWeek(delta) {
+    viewDate.setDate(viewDate.getDate() + delta);
+    loadSnapshot();
+  }
+  
+  function goToday() {
+    viewDate = new Date();
+    selectedYmd = ymd(viewDate);
+    loadSnapshot();
+  }
+  
+  function updateNav() {
+    const reservarBtn = document.getElementById('navReservar');
+    const preencherBtn = document.getElementById('navPreencher');
+
+    if (reservarBtn) {
+      reservarBtn.href = getUrl('reservar', { d: selectedYmd });
+      reservarBtn.addEventListener('click', animateAgendarButton);
+    }
+    
+    if (preencherBtn) {
+      preencherBtn.href = getUrl('preencher', { d: selectedYmd });
+      preencherBtn.onclick = null;
+    }
+  }
+  
+  function loadSnapshot() {
+    const loadingEl = document.getElementById('loadingStatus');
+    if (loadingEl) {
+      loadingEl.innerHTML = '<span class="loading-spinner"></span> Atualizando...';
+    }
+    
+    const from = ymd(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+    const to = ymd(new Date(viewDate.getFullYear(), viewDate.getMonth() + 2, 0));
+    
+    google.script.run
+      .withSuccessHandler(snap => {
+        SNAP = snap || { byDate: {} };
+        if (loadingEl) {
+          loadingEl.innerHTML = '✅ Pronto';
+          setTimeout(() => {
+            loadingEl.innerHTML = 'Portal de Cultos ';
+          }, 2000);
+        }
+        render();
+      })
+      .api_getSnapshot(from, to);
+  }
+  
+  // ========================
+  // INITIALIZATION
+  // ========================
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    viewDate.setDate(today.getDate() - dayOfWeek);
+    
+    // Configurar calendário com mês atual
+    calendarMonth = today.getMonth();
+    calendarYear = today.getFullYear();
+    
+    // Fechar modal ao clicar fora (opcional)
+    $('#viewModal').addEventListener('click', (e) => {
+      if (e.target.id === 'viewModal') {
+        closeViewModal();
+      }
+    });
+    
+    // Adicionar tecla ESC para fechar modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && $('#viewModal').style.display === 'block') {
+        closeViewModal();
+      }
+    });
+    
+    google.script.run
+      .withSuccessHandler(boot => {
+        BOOT = boot;
+        if (boot.cfg?.appName) {
+          document.getElementById('appName').textContent = boot.cfg.appName + ' | ';
+        }
+        loadSnapshot();
+      })
+      .api_bootstrap();
+  });
+
+</script>
+
+<script>window.PAGE_ID='HOME';</script>
+<?!= include('Logger'); ?>
+
+</body>
+</html>

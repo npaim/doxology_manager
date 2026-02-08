@@ -14,6 +14,7 @@ sys.path.append(str(BASE_DIR))
 
 from src.db.base import Base  # noqa
 from src.config import DATABASE_URL
+from src.db import models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
