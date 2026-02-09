@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from fastapi import HTTPException
 
-from src.db.models import Song, Service
+from src.db.models import Song, Service, ServiceSong
 
 from datetime import datetime, timedelta
 
@@ -79,3 +79,23 @@ def get_services_for_month(db, year: int, month: int):
         .order_by(Service.service_date)
         .all()
     )
+
+
+
+def add_song_to_service(
+    db: Session,
+    service_id: int,
+    song_id: int,
+    position: int,
+):
+    ss = ServiceSong(
+        service_id=service_id,
+        song_id=song_id,
+        position=position,
+    )
+    db.add(ss)
+    db.commit()
+
+
+def get_all_songs(db: Session):
+    return db.query(Song).order_by(Song.title).all()

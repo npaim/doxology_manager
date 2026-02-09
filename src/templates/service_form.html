@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Schedule Service{% endblock %}
+
+{% block content %}
+
+<h1>Schedule Service</h1>
+
+<form method="post" class="service-form">
+
+  <input type="hidden" name="service_date" value="{{ service_date }}">
+
+  <label>
+    Date
+    <input type="text" value="{{ service_date }}" disabled>
+  </label>
+
+  <label>
+    Preacher
+    <input type="text" name="preacher">
+  </label>
+
+  <label>
+    Service Leader
+    <input type="text" name="leader">
+  </label>
+
+  <label>
+    Sermon Title
+    <input type="text" name="title">
+  </label>
+
+  <label>
+    Notes
+    <textarea name="notes"></textarea>
+  </label>
+
+  <button type="submit">Save Service</button>
+
+</form>
+
+{% endblock %}
