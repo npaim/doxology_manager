@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar{% endblock %}
+
+{% block content %}
+
+
+<h1>Service Calendar — {{ month }}/{{ year }}</h1>
+
+<div class="calendar-nav">
+  <a href="/?year={{ year }}&month={{ month - 1 }}">← Prev</a>
+  <a href="/?year={{ year }}&month={{ month + 1 }}">Next →</a>
+</div>
+
+<div class="calendar-grid">
+  {% for week in weeks %}
+    {% for day in week %}
+      <div class="calendar-cell {% if day.month != month %}muted{% endif %}">
+        <div class="date">{{ day.day }}</div>
+
+        {% for service in service_map.get(day, []) %}
+          <div class="service-card">
+            <a href="/services/{{ service.id }}">
+              {{ service.title or "Service" }}
+            </a>
+            <small>{{ service.preacher }}</small>
+          </div>
+        {% endfor %}
+        {% for day in week %}
+        <td class="day-cell">
+            <div class="date">{{ day.day }}</div>
+
+            {% for service in service_map.get(day, []) %}
+            <div class="service-card">
+                <strong>{{ service.preacher or "TBD" }}</strong><br>
+                <small>{{ service.responsible or "TBD" }}</small>
+            </div>
+            {% endfor %}
+
+        </td>
+        {% endfor %}
+
+      </div>
+    {% endfor %}
+  {% endfor %}
+</div>
+
+<a class="new-service-btn" href="/services/new">+ Schedule Service</a>
+
+{% endblock %}

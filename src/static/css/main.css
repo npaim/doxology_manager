@@ -5,3 +5,61 @@ body {
 h1 {
   margin-bottom: 20px;
 }
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.service-card {
+  background: #f4efe7;
+  border-left: 4px solid #8b6f3d;
+  padding: 4px;
+  margin-top: 4px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.calendar-cell {
+  min-height: 120px;
+  background: #faf7f1;
+  border: 1px solid #d9cdb0;
+  padding: 6px;
+  border-radius: 6px;
+  font-family: Georgia, serif;
+}
+
+.calendar-cell.muted {
+  opacity: 0.4;
+}
+
+.date {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+
+.new-service-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 16px;
+  background: #7a5c2e;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+}
+
+.day-cell {
+  vertical-align: top;
+  height: 120px;
+  padding: 6px;
+}

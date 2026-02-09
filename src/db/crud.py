@@ -2,7 +2,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from fastapi import HTTPException
 
-from src.db.models import Song
+from src.db.models import Song, Service
+
+from datetime import datetime, timedelta
 
 
 def insert_song(
@@ -60,3 +62,20 @@ def get_all_songs(db: Session):
 
 def get_song_by_number(db: Session, hymn_number: int):
     return db.query(Song).filter(Song.hymn_number == hymn_number).first()
+
+
+def get_services_for_month(db, year: int, month: int):
+    start = datetime(year, month, 1)
+
+    if month == 12:
+        end = datetime(year + 1, 1, 1)
+    else:
+        end = datetime(year, month + 1, 1)
+
+    return (
+        db.query(Service)
+        .filter(Service.service_date >= start)
+        .filter(Service.service_date < end)
+        .order_by(Service.service_date)
+        .all()
+    )
