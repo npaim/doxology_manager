@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Service{% endblock %}
+
+{% block content %}
+
+<h1>Service Details</h1>
+
+<div class="service-detail">
+
+<h2>
+{{ service.service_date.strftime("%Y-%m-%d") }}
+at
+{{ service.service_time.strftime("%H:%M") }}
+</h2>
+
+<p>
+<b>Preacher:</b>
+{{ service.preacher }}
+</p>
+
+<p>
+<b>Leader:</b>
+{{ service.leader }}
+</p>
+
+<p>
+<b>Title:</b>
+{{ service.title }}
+</p>
+
+<p>
+<b>Notes:</b>
+{{ service.notes }}
+</p>
+
+<br>
+
+<a href="/services/{{ service.id }}/edit">
+Edit Service
+</a>
+
+<br>
+
+<a href="/">
+← Back to Calendar
+</a>
+
+</div>
+
+{% endblock %}

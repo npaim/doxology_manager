@@ -1,47 +1,67 @@
 {% extends "base.html" %}
 
-{% block title %}Schedule Service{% endblock %}
+{% block title %}Service{% endblock %}
 
 {% block content %}
 
-<h1>Schedule Service</h1>
+<h1>{{ "Edit Service" if service else "Schedule Service" }}</h1>
 
-<form method="post" class="service-form">
+<form method="post" action="/services/new" class="service-form">
 
-  <input type="hidden" name="service_date" value="{{ service_date }}">
+{% if service %}
+<input type="hidden" name="service_id" value="{{ service.id }}">
+{% endif %}
 
-  <label>
-    Date
-    <input type="text" value="{{ service_date }}" disabled>
-  </label>
+<label>
+Date
+<input type="date"
+name="service_date"
+value="{{ service.service_date.strftime('%Y-%m-%d') if service else service_date }}">
+</label>
 
-  <label>
-    Time
-    <input type="time" name="service_time">
-  </label>
+<label>
+Time
+<input type="time"
+name="service_time"
+value="{{ service.service_time.strftime('%H:%M') if service else '' }}">
+</label>
 
-  <label>
-    Preacher
-    <input type="text" name="preacher">
-  </label>
+<label>
+Preacher
+<input type="text"
+name="preacher"
+value="{{ service.preacher if service else '' }}">
+</label>
 
-  <label>
-    Service Leader
-    <input type="text" name="leader">
-  </label>
+<label>
+Service Leader
+<input type="text"
+name="leader"
+value="{{ service.leader if service else '' }}">
+</label>
 
-  <label>
-    Sermon Title
-    <input type="text" name="title">
-  </label>
+<label>
+Sermon Title
+<input type="text"
+name="title"
+value="{{ service.title if service else '' }}">
+</label>
 
-  <label>
-    Notes
-    <textarea name="notes"></textarea>
-  </label>
+<label>
+Notes
+<textarea name="notes">{{ service.notes if service else '' }}</textarea>
+</label>
 
-  <button type="submit">Save Service</button>
+<button type="submit">
+{{ "Update Service" if service else "Save Service" }}
+</button>
 
 </form>
+
+<br>
+
+<a href="/">
+← Back to Calendar
+</a>
 
 {% endblock %}

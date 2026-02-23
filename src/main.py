@@ -6,6 +6,7 @@ from src.db import models
 from src.routers import pages
 
 from src.api.routes import songs
+from src.api.routes import services
 
 app = FastAPI(title="Doxology Manager API")
 
@@ -14,6 +15,7 @@ app = FastAPI(title="Doxology Manager API")
 
 app.include_router(songs.router, prefix="/songs", tags=["songs"])
 app.include_router(pages.router)
+app.include_router(services.router)
 
 app.add_middleware(
     CORSMiddleware,

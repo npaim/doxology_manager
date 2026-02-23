@@ -65,7 +65,7 @@ def calendar_view(
 @router.get("/services/new", response_class=HTMLResponse)
 def new_service_form(
     request: Request,
-    date: str,
+    date: str | None = None
 ):
     return templates.TemplateResponse(
         "service_form.html",
@@ -78,12 +78,13 @@ def new_service_form(
 
 
 @router.post("/services/new")
-def create_service(
+def save_service(
+    service_id: int = Form(None),
     service_date: str = Form(...),
     service_time: str = Form(...),
     preacher: str = Form(None),
     leader: str = Form(None),
-    title:str = Form(None),
+    title: str = Form(None),
     notes: str = Form(None),
     db: Session = Depends(get_db),
 ):
@@ -91,16 +92,77 @@ def create_service(
     from src.db.models import Service
     from datetime import datetime
 
-    service = Service(
-        service_date=datetime.strptime(service_date, "%Y-%m-%d"),
-        service_time=datetime.strptime(service_time, "%H:%M").time(),
-        preacher=preacher,
-        leader=leader,
-        title=title,
-        notes=notes,
-    )
+    if service_id:
 
-    db.add(service)
+        service = db.query(Service).get(service_id)
+
+        service.service_date = datetime.strptime(service_date,"%Y-%m-%d")
+
+        service.service_time = datetime.strptime(
+            service_time,"%H:%M"
+        ).time()
+
+        service.preacher = preacher
+        service.leader = leader
+        service.title = title
+        service.notes = notes
+
+    else:
+
+        service = Service(
+
+            service_date=datetime.strptime(service_date,"%Y-%m-%d"),
+
+            service_time=datetime.strptime(
+                service_time,"%H:%M"
+            ).time(),
+
+            preacher=preacher,
+            leader=leader,
+            title=title,
+            notes=notes,
+        )
+
+        db.add(service)
+
     db.commit()
 
     return RedirectResponse("/", status_code=303)
+
+@router.get("/services/{service_id}", response_class=HTMLResponse)
+def service_detail(
+    service_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    from src.db.models import Service
+
+    service = db.query(Service).get(service_id)
+
+    return templates.TemplateResponse(
+        "service_detail.html",
+        {
+            "request": request,
+            "service": service
+        }
+    )
+
+@router.get("/services/{service_id}/edit", response_class=HTMLResponse)
+def edit_service_form(
+    service_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    from src.db.models import Service
+
+    service = db.query(Service).get(service_id)
+
+    return templates.TemplateResponse(
+        "service_form.html",
+        {
+            "request": request,
+            "service": service
+        },
+    )
