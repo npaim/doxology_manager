@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint, ForeignKey, Time
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from src.db.base import Base
@@ -28,6 +28,7 @@ class Service(Base):
     )
     created_by = Column(String, nullable=True)
     service_date = Column(DateTime, index=True, nullable=False)
+    service_time = Column(Time, nullable=False)
     preacher = Column(String, nullable=True)
     leader = Column(String, nullable=True)
     title = Column(String, nullable=True)

@@ -1,54 +1,105 @@
 {% extends "base.html" %}
 
-{% block title %}Service Calendar{% endblock %}
+{% block title %}Calendar{% endblock %}
 
 {% block content %}
 
-<h1>Service Calendar — {{ month }}/{{ year }}</h1>
+<h1>{{ month_name }} {{ year }}</h1>
 
 <div class="calendar-nav">
-  <a href="/?year={{ year }}&month={{ month - 1 }}">← Prev</a>
-  <a href="/?year={{ year }}&month={{ month + 1 }}">Next →</a>
-</div>
 
-<!-- Weekday header -->
-<div class="calendar-grid header">
-  <div>Mon</div>
-  <div>Tue</div>
-  <div>Wed</div>
-  <div>Thu</div>
-  <div>Fri</div>
-  <div>Sat</div>
-  <div>Sun</div>
-</div>
+<a href="/?year={{ prev_year }}&month={{ prev_month }}">
+← Previous
+</a>
 
-<!-- Calendar body -->
-<div class="calendar-grid">
-
-  {% for week in weeks %}
-    {% for day in week %}
-
-      <a
-        href="/services/new?date={{ day.isoformat() }}"
-        class="calendar-cell {% if day.month != month %}muted{% endif %}"
-      >
-
-        <div class="date">{{ day.day }}</div>
-
-        {% for service in service_map.get(day, []) %}
-          <div class="service-card">
-            <strong>{{ service.preacher or "TBD" }}</strong><br>
-            <small>{{ service.responsible or "TBD" }}</small>
-          </div>
-        {% endfor %}
-
-        </a>
-
-    {% endfor %}
-  {% endfor %}
+<a href="/?year={{ next_year }}&month={{ next_month }}">
+Next →
+</a>
 
 </div>
 
-<a class="new-service-btn" href="/services/new">+ Schedule Service</a>
+<table class="calendar-table">
+
+<thead>
+<tr>
+<th>Sunday</th>
+<th>Monday</th>
+<th>Tuesday</th>
+<th>Wednesday</th>
+<th>Thursday</th>
+<th>Friday</th>
+<th>Saturday</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for week in calendar %}
+<tr>
+
+{% for day in week %}
+
+<td class="day-cell">
+
+<div class="day-number">
+{{ day.day }}
+</div>
+
+{% set day_services = services_by_date.get(day, []) %}
+
+{% for service in day_services %}
+
+<div class="service-item">
+
+<div class="service-summary">
+
+{{ service.service_time.strftime("%H:%M") }}
+-
+{{ service.preacher }}
+
+</div>
+
+<div class="service-tooltip">
+
+<b>Time:</b>
+{{ service.service_time.strftime("%H:%M") }}
+<br>
+
+<b>Preacher:</b>
+{{ service.preacher }}
+<br>
+
+<b>Leader:</b>
+{{ service.leader }}
+<br>
+
+<b>Title:</b>
+{{ service.title }}
+<br>
+
+<b>Notes:</b>
+{{ service.notes }}
+
+</div>
+
+</div>
+
+{% endfor %}
+
+<a class="add-service"
+href="/services/new?date={{ day }}">
++ Add Service
+</a>
+
+</td>
+
+{% endfor %}
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
 
 {% endblock %}

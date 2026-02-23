@@ -6,60 +6,223 @@ h1 {
   margin-bottom: 20px;
 }
 
-.calendar {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-  margin-top: 30px;
+.calendar-container {
+
+    max-width:1100px;
+    margin:auto;
+
 }
 
-.service-card {
-  background: #f4efe7;
-  border-left: 4px solid #8b6f3d;
-  padding: 4px;
-  margin-top: 4px;
-  border-radius: 4px;
-  font-size: 0.85rem;
+.calendar-header {
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:15px;
+
 }
 
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-top: 20px;
+.calendar-table {
+
+    width:100%;
+    border-collapse:collapse;
+
 }
 
-.calendar-cell {
-  min-height: 120px;
-  background: #faf7f1;
-  border: 1px solid #d9cdb0;
-  padding: 6px;
-  border-radius: 6px;
-  font-family: Georgia, serif;
+.calendar-table th {
+
+    background:#f0f0f0;
+    padding:8px;
+    border:1px solid #ddd;
+
 }
 
-.calendar-cell.muted {
-  opacity: 0.4;
+.calendar-day {
+
+    height:110px;
+    vertical-align:top;
+    border:1px solid #ddd;
+
+    padding:4px;
+
+    position:relative;
+
 }
 
-.date {
-  font-weight: bold;
-  margin-bottom: 4px;
+.other-month {
+
+    background:#fafafa;
+    color:#aaa;
+
+}
+
+.day-link {
+
+    text-decoration:none;
+    color:inherit;
+
+}
+
+.day-number {
+
+    font-weight:bold;
+    margin-bottom:4px;
+
 }
 
 
-.new-service-btn {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 16px;
-  background: #7a5c2e;
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
+/* Services */
+
+.service-item {
+
+    font-size:12px;
+
+    margin-top:4px;
+    padding:2px 4px;
+
+    background:#e8f0ff;
+
+    border-radius:4px;
+
+    cursor:pointer;
+
+    position:relative;
+
 }
 
-.day-cell {
-  vertical-align: top;
-  height: 120px;
-  padding: 6px;
+
+/* Tooltip */
+
+.tooltip {
+
+    display:none;
+
+    position:absolute;
+
+    top:20px;
+    left:0;
+
+    width:240px;
+
+    background:white;
+
+    border:1px solid #ccc;
+
+    padding:8px;
+
+    border-radius:6px;
+
+    box-shadow:0 4px 10px rgba(0,0,0,0.15);
+
+    font-size:12px;
+
+    z-index:1000;
+
+}
+
+
+.service-item:hover .tooltip {
+
+    display:block;
+
+}
+
+
+.calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calendar-table th {
+    background: #f0f0f0;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.calendar-table td {
+
+    vertical-align: top;
+
+    height: 120px;
+
+    border: 1px solid #ccc;
+
+    padding: 5px;
+
+    position: relative;
+}
+
+.day-number {
+
+    font-weight: bold;
+
+    margin-bottom: 5px;
+
+}
+
+.service-item {
+
+    position: relative;
+
+    margin-top: 4px;
+
+}
+
+.service-summary {
+
+    background: #e6f2ff;
+
+    padding: 3px;
+
+    border-radius: 4px;
+
+    font-size: 12px;
+
+    cursor: pointer;
+
+}
+
+.service-tooltip {
+
+    display: none;
+
+    position: absolute;
+
+    top: 22px;
+
+    left: 0;
+
+    background: white;
+
+    border: 1px solid #ccc;
+
+    padding: 8px;
+
+    font-size: 13px;
+
+    width: 220px;
+
+    box-shadow: 0px 3px 8px rgba(0,0,0,0.2);
+
+    z-index: 1000;
+
+}
+
+.service-item:hover .service-tooltip {
+
+    display: block;
+
+}
+
+.add-service {
+
+    display: block;
+
+    margin-top: 6px;
+
+    font-size: 12px;
+
+    color: blue;
+
 }
