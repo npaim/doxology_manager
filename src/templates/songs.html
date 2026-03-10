@@ -1,34 +1,2 @@
-﻿{% extends "base.html" %}
-{% block title %}Songs{% endblock %}
-{% block content %}
-
-<div class="grid lg:grid-cols-2 gap-6">
-  <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-    <h2 class="text-lg font-semibold mb-4">Add Song</h2>
-    <form id="song-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <label class="block text-sm font-medium sm:col-span-2">
-        <span class="text-gray-700">Title</span>
-        <input id="title" type="text" required class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="e.g. AMAZING GRACE">
-      </label>
-      <label class="block text-sm font-medium">
-        <span class="text-gray-700">Hymn #</span>
-        <input id="hymn_number" type="number" required class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="e.g. 23">
-      </label>
-      <label class="block text-sm font-medium">
-        <span class="text-gray-700">Misc</span>
-        <input id="misc" type="text" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Optional">
-      </label>
-      <div class="sm:col-span-2">
-        <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-white text-sm font-medium hover:bg-blue-600">Add</button>
-      </div>
-    </form>
-  </section>
-
-  <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-    <h2 class="text-lg font-semibold mb-2">Songs</h2>
-    <ul id="songs-list" class="divide-y divide-gray-100"></ul>
-  </section>
-</div>
-
-{% endblock %}
+﻿{% extends "base.html" %}{% block title %}Songs{% endblock %}{% block content %}<div class="grid lg:grid-cols-2 gap-6">  <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">    <h2 class="text-lg font-semibold mb-4">Add Song</h2>    <form id="song-form" class="grid grid-cols-1 sm:grid-cols-2 gap-4">      <label class="block text-sm font-medium sm:col-span-2">        <span class="text-gray-700">Title</span>        <input id="title" type="text" required class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="e.g. AMAZING GRACE">      </label>      <label class="block text-sm font-medium">        <span class="text-gray-700">Hymn #</span>        <input id="hymn_number" type="number" required class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="e.g. 23">      </label>      <label class="block text-sm font-medium">        <span class="text-gray-700">Misc</span>        <input id="misc" type="text" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Optional">      </label>      <div class="sm:col-span-2">        <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-white text-sm font-medium hover:bg-blue-600">Add</button>      </div>    </form>  </section>  <section class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">    <h2 class="text-lg font-semibold mb-2">Songs</h2>    <ul id="songs-list" class="divide-y divide-gray-100"></ul>  </section></div>{% endblock %}
 

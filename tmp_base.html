@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
   <meta charset="utf-8">
@@ -95,27 +95,6 @@
 
   <script src="{{ url_for('static', path='/js/api.js') }}"></script>
   <script src="{{ url_for('static', path='/js/i18n.js') }}"></script>
-  <script>
-        // Minimal UI stub to avoid ReferenceError if ui.js hasn't loaded yet
-    window.UI = window.UI || {
-      toast: function(msg){ try{ console.log('[toast]', msg); }catch(_){} },
-      confirm: function(msg){ try { return Promise.resolve(window.confirm ? window.confirm(msg) : true); } catch(_) { return Promise.resolve(true); } },
-      promptForm: async function(opts){
-        try {
-          const fields = (opts && opts.fields) || [];
-          const out = {};
-          for (var i=0;i<fields.length;i++){
-            var f = fields[i];
-            var val = window.prompt(((opts && opts.title) ? (opts.title + ' — ') : '') + (f.label || f.name), f.value || '');
-            if (val === null) return null;
-            out[f.name] = val;
-          }
-          return out;
-        } catch(_) { return null; }
-      },
-      toggleTheme: function(){}
-    };
-  </script>
   <script src="{{ url_for('static', path='/js/ui.js') }}"></script>
   <script src="{{ url_for('static', path='/js/calendar.js') }}"></script>
   <script src="{{ url_for('static', path='/js/service.js') }}"></script>
@@ -145,6 +124,4 @@
   </script>
 </body>
 </html>
-
-
 

@@ -1,4 +1,4 @@
-ï»¿(function(){
+(function(){
   function build(){
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl || !window.FullCalendar) return false;
@@ -20,7 +20,7 @@
         let props = info.event.extendedProps;
         return { html: `
           <div class="text-center">
-            <div class="font-semibold text-sm">${(props.start_time && props.end_time ? `${props.start_time} â€” ${props.end_time}` : (props.start_time || props.end_time || '')) || ''}</div>
+            <div class="font-semibold text-sm">${(props.start_time && props.end_time ? `${props.start_time} — ${props.end_time}` : (props.start_time || props.end_time || '')) || ''}</div>
             <div class="text-xs text-gray-600">${props.preacher || ''}</div>
           </div>` };
       },
@@ -30,7 +30,7 @@
         info.el.addEventListener('mouseenter', function(){
           tooltip.innerHTML = `
             <div class="tooltip-content">
-              <div class="tooltip-time">${(props.start_time && props.end_time ? `${props.start_time} â€” ${props.end_time}` : (props.start_time || props.end_time || '')) || '-'}</div>
+              <div class="tooltip-time">${(props.start_time && props.end_time ? `${props.start_time} — ${props.end_time}` : (props.start_time || props.end_time || '')) || '-'}</div>
               <div><b>${tt('preacher','Preacher')}:</b> ${props.preacher || '-'}</div>
               <div><b>${tt('leader','Leader')}:</b> ${props.leader || '-'}</div>
               <div><b>${tt('sermon_title','Sermon Title')}:</b> <i>${props.title || '-'}</i></div>
@@ -55,3 +55,4 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
+

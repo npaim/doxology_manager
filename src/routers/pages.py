@@ -10,11 +10,25 @@ from src.db.crud import get_services_for_month
 from src.db.base import get_db
 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 
 templates = Jinja2Templates(directory="src/templates")
 
 router = APIRouter()
+
+
+def ensure_member(db: Session, name: str | None):
+    if not name:
+        return
+    name = name.strip()
+    if not name:
+        return
+    from src.db.models import Member
+    existing = db.query(Member).filter(func.lower(Member.name) == func.lower(name)).first()
+    if not existing:
+        m = Member(name=name)
+        db.add(m)
 
 
 import calendar
@@ -96,6 +110,11 @@ def save_service(
         service.leader = leader
         service.title = title
         service.notes = notes
+
+        # ensure members
+        ensure_member(db, preacher)
+        ensure_member(db, leader)
+
         db.commit()
         return RedirectResponse("/", status_code=303)
 
@@ -105,7 +124,6 @@ def save_service(
         st_start = datetime.strptime(start_time, "%H:%M").time()
         st_end = datetime.strptime(end_time, "%H:%M").time()
     except Exception:
-        # Re-render form with error
         return templates.TemplateResponse(
             "service_form.html",
             {"request": request, "service_date": service_date, "start_time": start_time, "end_time": end_time, "error": "Please provide a valid date and time."},
@@ -131,6 +149,11 @@ def save_service(
     )
 
     db.add(service)
+
+    # ensure members
+    ensure_member(db, preacher)
+    ensure_member(db, leader)
+
     db.commit()
     return RedirectResponse("/", status_code=303)
 
@@ -171,6 +194,7 @@ def songs_page(request: Request):
         { "request": request }
     )
 
+
 @router.get("/services/{service_id}/print", response_class=HTMLResponse)
 
 def print_service(service_id: int, request: Request, db: Session = Depends(get_db)):
@@ -181,3 +205,62 @@ def print_service(service_id: int, request: Request, db: Session = Depends(get_d
         "service_print.html",
         {"request": request, "service": service, "moments": moments}
     )
+
+@router.get("/services/{service_id}/moments/new", response_class=HTMLResponse)
+
+def new_moment_form(service_id: int, request: Request, db: Session = Depends(get_db)):
+    from src.db.models import Service
+    service = db.query(Service).get(service_id)
+    return templates.TemplateResponse(
+        "moment_form.html",
+        {"request": request, "service_id": service_id, "service_title": (service.title or 'Service') if service else 'Service'}
+    )
+
+
+@router.post("/services/{service_id}/moments/new", response_class=HTMLResponse)
+
+def create_moment_submit(
+    service_id: int,
+    request: Request,
+    title: str = Form(...),
+    responsible: str = Form(None),
+    time: str = Form(None),
+    notes: str = Form(None),
+    db: Session = Depends(get_db)
+):
+    from src.db.models import ServiceMoment
+    # position = max + 1
+    max_pos = db.query(func.max(ServiceMoment.position)).filter(ServiceMoment.service_id == service_id).scalar() or 0
+    pos = int(max_pos) + 1
+
+    t = None
+    if time:
+        try:
+            t = datetime.strptime(time, "%H:%M").time()
+        except Exception:
+            t = None
+
+    responsible_member_id = None
+    if responsible and responsible.strip():
+        # ensure member exists and fetch id
+        from src.db.models import Member
+        name = responsible.strip()
+        m = db.query(Member).filter(func.lower(Member.name) == func.lower(name)).first()
+        if not m:
+            m = Member(name=name)
+            db.add(m)
+            db.flush()
+        responsible_member_id = m.id
+
+    m = ServiceMoment(
+        service_id=service_id,
+        position=pos,
+        title=title,
+        responsible=responsible.strip() if responsible else None,
+        time=t,
+        notes=notes or None,
+        responsible_member_id=responsible_member_id,
+    )
+    db.add(m)
+    db.commit()
+    return RedirectResponse(f"/services/{service_id}", status_code=303)

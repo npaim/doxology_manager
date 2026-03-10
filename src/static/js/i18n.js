@@ -1,0 +1,49 @@
+﻿// Simple client-side i18n
+(function(){
+  const STORAGE_KEY = 'dm_lang';
+  const dict = {
+    'en': {
+      today: 'Today', month: 'Month', week: 'Week', day: 'Day',
+      calendar: 'Calendar', songs: 'Songs', new_service: 'New Service', toggle_theme: 'Toggle Theme',
+      calendar_title: 'Church Calendar', service: 'Service', details: 'Details', schedule: 'Schedule',
+      order_of_service: 'Order of Service', add_item: 'Add Item', edit: 'Edit', delete: 'Delete', back: 'Back',
+      export_csv: 'Export CSV', print: 'Print', date: 'Date', start: 'Start', end: 'End',
+      preacher: 'Preacher', leader: 'Leader', sermon_title: 'Sermon Title', notes: 'Notes',
+      no_items: 'No items yet. Click “Add Item”.', save_service: 'Save Service', update_service: 'Update Service',
+      service_leader: 'Service Leader', start_time: 'Start Time', end_time: 'End Time', add_song: 'Add Song',
+      hymn_number: 'Hymn #', misc: 'Misc', upcoming: 'Upcoming'
+    },
+    'pt-br': {
+      today: 'Hoje', month: 'Mês', week: 'Semana', day: 'Dia',
+      calendar: 'Calendário', songs: 'Cânticos', new_service: 'Novo Culto', toggle_theme: 'Tema',
+      calendar_title: 'Calendário da Igreja', service: 'Culto', details: 'Detalhes', schedule: 'Ordem do Culto',
+      order_of_service: 'Ordem do Culto', add_item: 'Adicionar Item', edit: 'Editar', delete: 'Excluir', back: 'Voltar',
+      export_csv: 'Exportar CSV', print: 'Imprimir', date: 'Data', start: 'Início', end: 'Fim',
+      preacher: 'Pregador', leader: 'Dirigente', sermon_title: 'Título da Mensagem', notes: 'Observações',
+      no_items: 'Ainda sem itens. Clique em “Adicionar Item”.', save_service: 'Salvar Culto', update_service: 'Atualizar Culto',
+      service_leader: 'Líder do Culto', start_time: 'Hora de Início', end_time: 'Hora de Término', add_song: 'Adicionar Cântico',
+      hymn_number: 'Nº do Hinário', misc: 'Obs.', upcoming: 'Próximos'
+    }
+  };
+
+  let current = (localStorage.getItem(STORAGE_KEY) || (navigator.language || 'en')).toLowerCase();
+  if (!dict[current]) current = current.startsWith('pt') ? 'pt-br' : 'en';
+
+  function t(key){ const d = dict[current] || dict['en']; return d[key] || key; }
+
+  function apply(root=document){
+    root.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n'); if (!key) return;
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = t(key);
+      else el.textContent = t(key);
+    });
+    root.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder'); if (key) el.setAttribute('placeholder', t(key));
+    });
+  }
+
+  function setLang(lang){ if (!dict[lang]) return; current = lang; try { localStorage.setItem(STORAGE_KEY, lang); } catch(_){}; apply(document); }
+  function getLang(){ return current; }
+
+  window.I18N = { t, apply, setLang, getLang };
+})();

@@ -1,0 +1,30 @@
+﻿{% extends "base.html" %}
+{% block title %}Add Item{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">{{ service_title or 'Service' }} — <span data-i18n="add_item">Add Item</span></h1>
+<div class="mb-4" id="form-errors">{% if error %}<div class="rounded-md border border-red-300 bg-red-50 text-red-700 px-4 py-2 text-sm">{{ error }}</div>{% endif %}</div>
+<form method="post" action="/services/{{ service_id }}/moments/new" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 max-w-xl">
+  <div class="grid grid-cols-1 gap-4">
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700">Title</span>
+      <input type="text" name="title" required value="{{ title or '' }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+    </label>
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700">Responsible</span>
+      <input type="text" name="responsible" value="{{ responsible or '' }}" data-member-autocomplete class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Name">
+    </label>
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700">Time (HH:MM)</span>
+      <input type="time" name="time" value="{{ time or '' }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+    </label>
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700" data-i18n="notes">Notes</span>
+      <textarea name="notes" rows="4" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">{{ notes or '' }}</textarea>
+    </label>
+  </div>
+  <div class="mt-6 flex items-center gap-3">
+    <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-white text-sm font-medium hover:bg-blue-600">Save</button>
+    <a href="/services/{{ service_id }}" class="text-sm text-gray-700 hover:text-gray-900">← Back</a>
+  </div>
+</form>
+{% endblock %}

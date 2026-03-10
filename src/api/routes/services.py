@@ -216,3 +216,28 @@ def ensure_member(payload: MemberCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(m)
     return m
+
+@router.get("/api/services/upcoming")
+def upcoming_services(limit: int = 5, db: Session = Depends(get_db)):
+    from datetime import datetime, date as dt_date
+    today = dt_date.today()
+    q = (
+        db.query(Service)
+        .filter(func.date(Service.service_date) >= today)
+        .order_by(Service.service_date)
+        .limit(limit)
+        .all()
+    )
+    items = []
+    for s in q:
+        items.append({
+            "id": s.id,
+            "date": s.service_date.strftime("%Y-%m-%d"),
+            "time": (s.start_time or s.service_time).strftime("%H:%M") if (s.start_time or s.service_time) else None,
+            "preacher": s.preacher,
+            "leader": s.leader,
+            "title": s.title,
+        })
+    return items
+
+

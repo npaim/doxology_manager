@@ -5,24 +5,26 @@
 {% block content %}
 
 <div class="flex items-center justify-between">
-  <h2 class="text-2xl font-semibold">Church Calendar</h2>
+  <h2 class="text-2xl font-semibold" data-i18n="calendar_title">Church Calendar</h2>
   <a href="/services/new" class="inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-white text-sm font-medium hover:bg-blue-600">
-    <span>New Service</span>
+    <span data-i18n="new_service">New Service</span>
   </a>
 </div>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales-all.global.min.js"></script>
 
 <style>
   .tooltip { position: absolute; background: white; border: 1px solid #e5e7eb; border-radius: .5rem; padding: .75rem; font-size: 14px; box-shadow: 0 10px 20px rgba(0,0,0,.08); pointer-events: none; display: none; max-width: 280px; }
   .tooltip .tooltip-time { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .fc-toolbar-title { text-transform: capitalize; }
 </style>
 
 <div id="tooltip" class="tooltip"></div>
 
 <div class="mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
-  <div id="calendar"></div>
+  <div id="calendar" class="w-full"></div>
 </div>
 
 {% endblock %}

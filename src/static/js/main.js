@@ -1,5 +1,1 @@
-console.log("Frontend JS loaded 🚀");
-
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM ready");
-});
+﻿console.log("Frontend JS loaded ðŸš€");document.addEventListener("DOMContentLoaded", () => {  console.log("DOM ready");});
