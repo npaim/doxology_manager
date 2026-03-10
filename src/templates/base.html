@@ -1,19 +1,99 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html lang="en" class="h-full">
 <head>
-  <title>{% block title %}{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Doxology Manager{% endblock %}</title>
+
+  <!-- Tailwind (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { brand: { DEFAULT: '#2563eb' }}}}
+    };
+  </script>
 
   <link rel="stylesheet" href="{{ url_for('static', path='/css/layout.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='/css/main.css') }}">
 
+  <script>
+    // Apply saved theme before paint
+    (function(){
+      try {
+        const saved = localStorage.getItem('dm_theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const enableDark = saved ? (saved === 'dark') : prefersDark;
+        if (enableDark) document.documentElement.classList.add('dark');
+      } catch(_) {}
+    })();
+  </script>
 </head>
-<body>
+<body class="h-full bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
 
-{% block content %}{% endblock %}
+  <!-- App Shell: Header -->
+  <div class="min-h-full">
+    <header class="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <!-- Mobile menu button -->
+          <button id="btn-mobile-menu" class="lg:hidden inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Open menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <a href="/" class="flex items-center gap-2 text-xl font-semibold">
+            <span class="inline-block w-2 h-6 bg-brand rounded-sm"></span>
+            Doxology Manager
+          </a>
+        </div>
+        <nav class="hidden lg:flex items-center gap-2">
+          <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Calendar</a>
+          <a href="/songs" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Songs</a>
+          <a href="/services/new" class="px-3 py-2 rounded-md text-sm font-medium bg-brand text-white hover:bg-blue-600">New Service</a>
+          <button id="theme-toggle" class="ml-1 inline-flex items-center justify-center px-2 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle theme">
+            <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:inline" viewBox="0 0 24 24" fill="currentColor"><path d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm9.83-18.16l-1.79-1.79-1.8 1.79 1.8 1.79 1.79-1.79zM20 13h3v-2h-3v2zM6.76 19.16l-1.8 1.79 1.8 1.79 1.79-1.79-1.79-1.79zM17.24 19.16l1.79 1.79 1.8-1.79-1.8-1.79-1.79 1.79zM12 6a6 6 0 100 12 6 6 0 000-12z"/></svg>
+            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a8.64 8.64 0 01-11.3-11.3A10 10 0 1021.64 13z"/></svg>
+          </button>
+        </nav>
+      </div>
+    </header>
 
-<script src="{{ url_for('static', path='/js/api.js') }}"></script>
-<script src="{{ url_for('static', path='/js/calendar.js') }}"></script>
-<script src="{{ url_for('static', path='/js/songs.js') }}"></script>
+    <!-- Mobile slide-over -->
+    <div id="mobile-menu" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+      <div class="absolute inset-0 bg-black/40" id="mobile-menu-backdrop"></div>
+      <div class="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg p-4">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold">Menu</span>
+          <button id="btn-mobile-close" class="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Close menu">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <nav class="space-y-1">
+          <a href="/" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Calendar</a>
+          <a href="/songs" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Songs</a>
+          <a href="/services/new" class="block px-3 py-2 rounded-md bg-brand text-white hover:bg-blue-600">New Service</a>
+          <button id="theme-toggle-mobile" class="mt-2 w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">Toggle Theme</button>
+        </nav>
+      </div>
+    </div>
 
-</body>
+    <!-- Main Content -->
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toast-root" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', path='/js/api.js') }}"></script>
+  <script src="{{ url_for('static', path='/js/ui.js') }}"></script>
+  <script src="{{ url_for('static', path='/js/calendar.js') }}"></script>
+  <script src="{{ url_for('static', path='/js/service.js') }}"></script>
+  <script src="{{ url_for('static', path='/js/app.js') }}"></script>
+
+  <script src="{{ url_for('static', path='/js/schedule.js') }}"></script>\n</body>
 </html>
+
+
+

@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Service Schedule</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>@media print { .no-print { display: none !important; } }</style>
+</head>
+<body class="bg-white text-gray-900">
+  <div class="max-w-3xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-semibold">Service Schedule</h1>
+      <button class="no-print px-3 py-2 rounded-md border text-sm hover:bg-gray-100" onclick="window.print()">Print</button>
+    </div>
+
+    <div class="mb-4 grid grid-cols-2 gap-4 text-sm">
+      <div><span class="text-gray-500">Date:</span> <span class="font-medium">{{ service.service_date.strftime('%Y-%m-%d') }}</span></div>
+      <div><span class="text-gray-500">Start:</span> <span class="font-medium">{{ (service.start_time or service.service_time).strftime('%H:%M') if (service.start_time or service.service_time) else '-' }}</span></div>
+      <div><span class="text-gray-500">End:</span> <span class="font-medium">{{ (service.end_time or service.service_time).strftime('%H:%M') if (service.end_time or service.service_time) else '-' }}</span></div>
+      <div><span class="text-gray-500">Preacher:</span> <span class="font-medium">{{ service.preacher or '-' }}</span></div>
+      <div><span class="text-gray-500">Leader:</span> <span class="font-medium">{{ service.leader or '-' }}</span></div>
+    </div>
+
+    <table class="w-full text-sm border border-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="text-left p-2 border-b">#</th>
+          <th class="text-left p-2 border-b">Time</th>
+          <th class="text-left p-2 border-b">Title</th>
+          <th class="text-left p-2 border-b">Responsible</th>
+          <th class="text-left p-2 border-b">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in moments %}
+        <tr>
+          <td class="p-2 border-b align-top">{{ m.position }}</td>
+          <td class="p-2 border-b align-top">{{ m.time.strftime('%H:%M') if m.time else '' }}</td>
+          <td class="p-2 border-b align-top">{{ m.title }}</td>
+          <td class="p-2 border-b align-top">{{ m.responsible or '' }}</td>
+          <td class="p-2 border-b align-top">{{ m.notes or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

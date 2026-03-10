@@ -1,67 +1,61 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Service{% endblock %}
 
 {% block content %}
 
-<h1>{{ "Edit Service" if service else "Schedule Service" }}</h1>
+<h1 class="text-2xl font-semibold mb-4">{{ "Edit Service" if service else "Schedule Service" }}</h1>
 
-<form method="post" action="/services/new" class="service-form">
+<div class="mb-4" id="form-errors">{% if error %}<div class="rounded-md border border-red-300 bg-red-50 text-red-700 px-4 py-2 text-sm">{{ error }}</div>{% endif %}</div>
+<form novalidate method="post" action="/services/new" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 max-w-xl">
 
-{% if service %}
-<input type="hidden" name="service_id" value="{{ service.id }}">
-{% endif %}
+  {% if service %}
+  <input type="hidden" name="service_id" value="{{ service.id }}">
+  {% endif %}
 
-<label>
-Date
-<input type="date"
-name="service_date"
-value="{{ service.service_date.strftime('%Y-%m-%d') if service else service_date }}">
-</label>
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700">Date</span>
+      <input type="date" name="service_date" required value="{{ service.service_date.strftime('%Y-%m-%d') if service else service_date }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+    </label>
 
-<label>
-Time
-<input type="time"
-name="service_time"
-value="{{ service.service_time.strftime('%H:%M') if service else '' }}">
-</label>
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700">Start Time</span>
+      <input type="time" name="start_time" required value="{{ service.start_time.strftime('%H:%M') if service and service.start_time else (service.service_time.strftime('%H:%M') if service and service.service_time else (start_time or '')) }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+    </label>
 
-<label>
-Preacher
-<input type="text"
-name="preacher"
-value="{{ service.preacher if service else '' }}">
-</label>
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700">End Time</span>
+      <input type="time" name="end_time" required value="{{ service.end_time.strftime('%H:%M') if service and service.end_time else (service.service_time.strftime('%H:%M') if service and service.service_time else (end_time or '')) }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+    </label>
 
-<label>
-Service Leader
-<input type="text"
-name="leader"
-value="{{ service.leader if service else '' }}">
-</label>
+    <label class="block text-sm font-medium sm:col-span-2">
+      <span class="text-gray-700">Preacher</span>
+      <input type="text" name="preacher" value="{{ service.preacher if service else '' }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Name">
+    </label>
 
-<label>
-Sermon Title
-<input type="text"
-name="title"
-value="{{ service.title if service else '' }}">
-</label>
+    <label class="block text-sm font-medium sm:col-span-2">
+      <span class="text-gray-700">Service Leader</span>
+      <input type="text" name="leader" value="{{ service.leader if service else '' }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Name">
+    </label>
 
-<label>
-Notes
-<textarea name="notes">{{ service.notes if service else '' }}</textarea>
-</label>
+    <label class="block text-sm font-medium sm:col-span-2">
+      <span class="text-gray-700">Sermon Title</span>
+      <input type="text" name="title" value="{{ service.title if service else '' }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Optional">
+    </label>
 
-<button type="submit">
-{{ "Update Service" if service else "Save Service" }}
-</button>
+    <label class="block text-sm font-medium sm:col-span-2">
+      <span class="text-gray-700">Notes</span>
+      <textarea name="notes" rows="4" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Optional">{{ service.notes if service else '' }}</textarea>
+    </label>
+  </div>
 
+  <div class="mt-6 flex items-center gap-3">
+    <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-white text-sm font-medium hover:bg-blue-600">
+      {{ "Update Service" if service else "Save Service" }}
+    </button>
+    <a href="/" class="text-sm text-gray-700 hover:text-gray-900">← Back to Calendar</a>
+  </div>
 </form>
-
-<br>
-
-<a href="/">
-← Back to Calendar
-</a>
 
 {% endblock %}

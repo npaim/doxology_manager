@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+﻿document.addEventListener("DOMContentLoaded", function () {
 
     const calendarEl = document.getElementById("calendar");
 
@@ -7,100 +7,60 @@ document.addEventListener("DOMContentLoaded", function () {
     const calendar = new FullCalendar.Calendar(calendarEl, {
 
         initialView: "dayGridMonth",
-
         height: "auto",
-
         fixedWeekCount: false,
-
         events: "/api/services",
 
-
-        /*
-        CLICK DAY → DAY VIEW
-        */
-
+        // CLICK DAY → NEW SERVICE FORM (pre-filled date)
         dateClick: function(info) {
-
-            window.location =
-                "/services/day?date=" + info.dateStr;
-
+            window.location = "/services/new?date=" + info.dateStr;
         },
 
-
-        /*
-        CLICK SERVICE → EDIT SERVICE
-        */
-
+        // CLICK SERVICE → SERVICE DETAIL
         eventClick: function(info) {
-
             const id = info.event.id;
-
-            window.location =
-                "/services/" + id;
-
+            window.location = "/services/" + id;
         },
 
-
-        /*
-        SHOW SERVICES INSIDE CELLS
-        */
-
+        // RENDER EVENT CONTENT (time + preacher)
         eventContent: function(info) {
-
             let props = info.event.extendedProps;
-
             return {
                 html: `
-                    <div class="service-event">
-                        <div class="service-time">
-                            ${props.time || ""}
-                        </div>
-
-                        <div class="service-preacher">
-                            ${props.preacher || ""}
-                        </div>
+                    <div class="text-center">
+                        <div class="font-semibold text-sm">${(props.start_time && props.end_time ? `${props.start_time} — ${props.end_time}` : (props.start_time || props.end_time || "")) || ''}</div>
+                        <div class="text-xs text-gray-600">${props.preacher || ''}</div>
                     </div>
                 `
             };
         },
 
-
-        /*
-        HOVER TOOLTIP
-        */
-
-
+        // HOVER TOOLTIP
         eventDidMount: function(info) {
-
             let props = info.event.extendedProps;
-
             const tooltip = document.getElementById("tooltip");
 
             info.el.addEventListener("mouseenter", function(e){
-            
                 tooltip.innerHTML = `
                     <div class="tooltip-content">
-                        <div class="tooltip-time">${props.time || "-"}</div>
-                        <div><b>Preacher:</b> ${props.preacher || "-"}</div>
-                        <div><b>Leader:</b> ${props.leader || "-"}</div>
-                        <div><b>Sermon:</b> <i>${props.title || "-"}</i></div>
-                        <div><b>Notes:</b> <i>${props.notes || ""}</div>
+                        <div class="tooltip-time">${(props.start_time && props.end_time ? `${props.start_time} — ${props.end_time}` : (props.start_time || props.end_time || "")) || '-'}</div>
+                        <div><b>Preacher:</b> ${props.preacher || '-'}</div>
+                        <div><b>Leader:</b> ${props.leader || '-'}</div>
+                        <div><b>Sermon:</b> <i>${props.title || '-'}</i></div>
+                        <div><b>Notes:</b> <i>${props.notes || ''}</i></div>
                     </div>
                 `;
-            
                 tooltip.style.display = "block";
-            
             });
-        
+
             info.el.addEventListener("mousemove", function(e){
                 tooltip.style.left = (e.pageX + 15) + "px";
                 tooltip.style.top = (e.pageY + 15) + "px";
             });
-        
+
             info.el.addEventListener("mouseleave", function(){
                 tooltip.style.display = "none";
             });
-
         }
 
     });
@@ -108,3 +68,4 @@ document.addEventListener("DOMContentLoaded", function () {
     calendar.render();
 
 });
+

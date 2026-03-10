@@ -1,8 +1,10 @@
+﻿# simple server-side validation feedback
+from fastapi import status
 from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from datetime import datetime, date, time
+from datetime import datetime, date
 
 from src.db.crud import get_services_for_month
 from src.db.base import get_db
@@ -15,9 +17,7 @@ templates = Jinja2Templates(directory="src/templates")
 router = APIRouter()
 
 
-
 import calendar
-from collections import defaultdict
 
 @router.get("/")
 def calendar_view(
@@ -26,22 +26,18 @@ def calendar_view(
     month: int = date.today().month,
     db: Session = Depends(get_db)
 ):
-
     cal = calendar.Calendar(firstweekday=6)
-
     month_days = cal.monthdatescalendar(year, month)
 
-    services = get_services_for_month(db, year, month)
+    # Safely try DB; if unavailable, render empty calendar
+    try:
+        services = get_services_for_month(db, year, month)
+    except Exception:
+        services = []
 
     services_by_date = {}
-
     for service in services:
-
-        services_by_date.setdefault(
-            service.service_date.date(),
-            []
-        ).append(service)
-
+        services_by_date.setdefault(service.service_date.date(), []).append(service)
 
     return templates.TemplateResponse(
         "calendar.html",
@@ -52,12 +48,10 @@ def calendar_view(
             "month": month,
             "year": year,
             "month_name": calendar.month_name[month],
-
             "prev_month": month-1 if month>1 else 12,
             "prev_year": year if month>1 else year-1,
-
             "next_month": month+1 if month<12 else 1,
-            "next_year": year if month<12 else year+1
+            "next_year": year if month<12 else year+1,
         }
     )
 
@@ -72,7 +66,8 @@ def new_service_form(
         {
             "request": request,
             "service_date": date,
-            "service_time": ""
+            "start_time": "",
+            "end_time": "",
         },
     )
 
@@ -81,53 +76,64 @@ def new_service_form(
 def save_service(
     service_id: int = Form(None),
     service_date: str = Form(...),
-    service_time: str = Form(...),
+    start_time: str = Form(...),
+    end_time: str = Form(...),
     preacher: str = Form(None),
     leader: str = Form(None),
     title: str = Form(None),
     notes: str = Form(None),
     db: Session = Depends(get_db),
 ):
-
     from src.db.models import Service
-    from datetime import datetime
 
     if service_id:
-
         service = db.query(Service).get(service_id)
-
-        service.service_date = datetime.strptime(service_date,"%Y-%m-%d")
-
-        service.service_time = datetime.strptime(
-            service_time,"%H:%M"
-        ).time()
-
+        service.service_date = datetime.strptime(service_date, "%Y-%m-%d")
+        service.start_time = datetime.strptime(start_time, "%H:%M").time()
+        service.end_time = datetime.strptime(end_time, "%H:%M").time()
+        service.service_time = service.start_time  # keep legacy field in sync
         service.preacher = preacher
         service.leader = leader
         service.title = title
         service.notes = notes
+        db.commit()
+        return RedirectResponse("/", status_code=303)
 
-    else:
-
-        service = Service(
-
-            service_date=datetime.strptime(service_date,"%Y-%m-%d"),
-
-            service_time=datetime.strptime(
-                service_time,"%H:%M"
-            ).time(),
-
-            preacher=preacher,
-            leader=leader,
-            title=title,
-            notes=notes,
+    # create
+    try:
+        sd = datetime.strptime(service_date, "%Y-%m-%d")
+        st_start = datetime.strptime(start_time, "%H:%M").time()
+        st_end = datetime.strptime(end_time, "%H:%M").time()
+    except Exception:
+        # Re-render form with error
+        return templates.TemplateResponse(
+            "service_form.html",
+            {"request": request, "service_date": service_date, "start_time": start_time, "end_time": end_time, "error": "Please provide a valid date and time."},
+            status_code=400,
         )
 
-        db.add(service)
+    if st_end < st_start:
+        return templates.TemplateResponse(
+            "service_form.html",
+            {"request": request, "service_date": service_date, "start_time": start_time, "end_time": end_time, "error": "End time must be after start time."},
+            status_code=400,
+        )
 
+    service = Service(
+        service_date=sd,
+        service_time=st_start,
+        start_time=st_start,
+        end_time=st_end,
+        preacher=preacher,
+        leader=leader,
+        title=title,
+        notes=notes,
+    )
+
+    db.add(service)
     db.commit()
-
     return RedirectResponse("/", status_code=303)
+
 
 @router.get("/services/{service_id}", response_class=HTMLResponse)
 def service_detail(
@@ -135,18 +141,13 @@ def service_detail(
     request: Request,
     db: Session = Depends(get_db)
 ):
-
     from src.db.models import Service
-
     service = db.query(Service).get(service_id)
-
     return templates.TemplateResponse(
         "service_detail.html",
-        {
-            "request": request,
-            "service": service
-        }
+        {"request": request, "service": service}
     )
+
 
 @router.get("/services/{service_id}/edit", response_class=HTMLResponse)
 def edit_service_form(
@@ -154,15 +155,29 @@ def edit_service_form(
     request: Request,
     db: Session = Depends(get_db)
 ):
-
     from src.db.models import Service
-
     service = db.query(Service).get(service_id)
-
     return templates.TemplateResponse(
         "service_form.html",
-        {
-            "request": request,
-            "service": service
-        },
+        {"request": request, "service": service},
+    )
+
+
+@router.get("/songs", response_class=HTMLResponse)
+
+def songs_page(request: Request):
+    return templates.TemplateResponse(
+        "songs.html",
+        { "request": request }
+    )
+
+@router.get("/services/{service_id}/print", response_class=HTMLResponse)
+
+def print_service(service_id: int, request: Request, db: Session = Depends(get_db)):
+    from src.db.models import Service, ServiceMoment
+    service = db.query(Service).get(service_id)
+    moments = db.query(ServiceMoment).filter(ServiceMoment.service_id == service_id).order_by(ServiceMoment.position).all()
+    return templates.TemplateResponse(
+        "service_print.html",
+        {"request": request, "service": service, "moments": moments}
     )

@@ -1,0 +1,142 @@
+﻿// Schedule (moments) UI for service detail
+(function(){
+  const wrapper = document.querySelector('[data-service-id]');
+  if (!wrapper) return;
+  const serviceId = Number(wrapper.getAttribute('data-service-id'));
+  const listEl = document.getElementById('moments-list');
+  const emptyEl = document.getElementById('moments-empty');
+  const addBtn = document.getElementById('btn-add-moment');
+
+  function rowHTML(m){
+    const time = m.time ? (typeof m.time === 'string' ? (m.time.length > 5 ? m.time.slice(0,5) : m.time) : '') : '';
+    const resp = m.responsible ? ` — <span class="text-gray-500">${m.responsible}</span>` : '';
+    return `
+      <li class="py-2 flex items-center justify-between gap-2">
+        <div class="min-w-0">
+          <div class="text-sm"><span class="text-gray-500">${m.position}.</span> <span class="font-medium">${m.title}</span>${resp}</div>
+          <div class="text-xs text-gray-500">${time} ${m.notes ? ' · ' + m.notes : ''}</div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button data-id="${m.id}" data-action="up" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700" title="Move up">↑</button>
+          <button data-id="${m.id}" data-action="down" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700" title="Move down">↓</button>
+          <button data-id="${m.id}" data-action="edit" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">Edit</button>
+          <button data-id="${m.id}" data-action="delete" class="px-2 py-1 rounded-md border text-xs text-red-600 border-red-300 hover:bg-red-50 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900/30">Delete</button>
+        </div>
+      </li>`;
+  }
+
+  async function load(){
+    const res = await fetch(`/api/services/${serviceId}/moments`);
+    const moments = await res.json();
+    listEl.innerHTML = moments.map(rowHTML).join('');
+    emptyEl.classList.toggle('hidden', moments.length > 0);
+  }
+
+  function installMemberAutocomplete(form, inputs){
+    const inp = inputs['responsible'];
+    if (!inp) return;
+    const listId = 'members-datalist';
+    let dl = form.querySelector('#' + listId);
+    if (!dl) { dl = document.createElement('datalist'); dl.id = listId; form.appendChild(dl); }
+    inp.setAttribute('list', listId);
+    let tmr = null;
+    inp.addEventListener('input', () => {
+      clearTimeout(tmr);
+      const q = inp.value.trim();
+      if (q.length === 0) { dl.innerHTML = ''; return; }
+      tmr = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/members?q=${encodeURIComponent(q)}`);
+          const arr = await res.json();
+          dl.innerHTML = arr.map(m => `<option value="${m.name}"></option>`).join('');
+        } catch(_) {}
+      }, 200);
+    });
+  }
+
+  addBtn?.addEventListener('click', async () => {
+    window.__ui_onInit = ({ form, inputs }) => installMemberAutocomplete(form, inputs);
+    const values = await UI.promptForm({
+      title: 'Add Item',
+      fields: [
+        { name: 'title', label: 'Title', type: 'text', value: '', required: true },
+        { name: 'responsible', label: 'Responsible', type: 'text', value: '' },
+        { name: 'time', label: 'Time (HH:MM)', type: 'time', value: '' },
+        { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, value: '' },
+      ]
+    });
+    window.__ui_onInit = null;
+    if (!values) return;
+    let memberId = null;
+    if ((values.responsible || '').trim().length > 0){
+      const r = await fetch(`/api/members/ensure`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: values.responsible.trim() }) });
+      if (r.ok){ const m = await r.json(); memberId = m.id; values.responsible = m.name; }
+    }
+    const res = await fetch(`/api/services/${serviceId}/moments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...values, responsible_member_id: memberId }) });
+    if (!res.ok){ UI.toast('Add failed', 'error'); return; }
+    UI.toast('Item added', 'success');
+    load();
+  });
+
+  listEl?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    const action = btn.dataset.action;
+
+    if (action === 'delete'){
+      const ok = await UI.confirm('Delete this item?');
+      if (!ok) return;
+      const res = await fetch(`/api/services/${serviceId}/moments/${id}`, { method: 'DELETE' });
+      if (!res.ok){ UI.toast('Delete failed', 'error'); return; }
+      UI.toast('Deleted', 'success');
+      load();
+      return;
+    }
+
+    if (action === 'edit'){
+      const res0 = await fetch(`/api/services/${serviceId}/moments`);
+      const arr = await res0.json();
+      const m = arr.find(x => x.id === id);
+      window.__ui_onInit = ({ form, inputs }) => installMemberAutocomplete(form, inputs);
+      const values = await UI.promptForm({
+        title: 'Edit Item',
+        fields: [
+          { name: 'title', label: 'Title', type: 'text', value: m.title, required: true },
+          { name: 'responsible', label: 'Responsible', type: 'text', value: m.responsible || '' },
+          { name: 'time', label: 'Time (HH:MM)', type: 'time', value: m.time || '' },
+          { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, value: m.notes || '' },
+        ]
+      });
+      window.__ui_onInit = null;
+      if (!values) return;
+      let memberId = null;
+      if ((values.responsible || '').trim().length > 0){
+        const r = await fetch(`/api/members/ensure`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: values.responsible.trim() }) });
+        if (r.ok){ const mm = await r.json(); memberId = mm.id; values.responsible = mm.name; }
+      }
+      const res = await fetch(`/api/services/${serviceId}/moments/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...values, responsible_member_id: memberId }) });
+      if (!res.ok){ UI.toast('Update failed', 'error'); return; }
+      UI.toast('Updated', 'success');
+      load();
+      return;
+    }
+
+    if (action === 'up' || action === 'down'){
+      const res0 = await fetch(`/api/services/${serviceId}/moments`);
+      const arr = await res0.json();
+      const idx = arr.findIndex(x => x.id === id);
+      if (idx < 0) return;
+      const swapWith = action === 'up' ? idx - 1 : idx + 1;
+      if (swapWith < 0 || swapWith >= arr.length) return;
+
+      const a = arr[idx];
+      const b = arr[swapWith];
+      await fetch(`/api/services/${serviceId}/moments/${a.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ position: b.position }) });
+      await fetch(`/api/services/${serviceId}/moments/${b.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ position: a.position }) });
+      load();
+    }
+  });
+
+  load();
+})();

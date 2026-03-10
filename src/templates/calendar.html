@@ -1,199 +1,29 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block title %}Calendar{% endblock %}
 
 {% block content %}
 
-<h2>Church Calendar</h2>
-
-<a href="/services/new" class="add-btn">
-➕ Add Service
-</a>
+<div class="flex items-center justify-between">
+  <h2 class="text-2xl font-semibold">Church Calendar</h2>
+  <a href="/services/new" class="inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-white text-sm font-medium hover:bg-blue-600">
+    <span>New Service</span>
+  </a>
+</div>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 <style>
-
-.add-btn{
-padding:8px 14px;
-background:#2d6cdf;
-color:white;
-text-decoration:none;
-border-radius:6px;
-display:inline-block;
-margin-bottom:10px;
-}
-
-.fc-daygrid-day:hover{
-background:#eef6ff;
-cursor:pointer;
-}
-
-.fc-day-sat{
-background:#f0f8ff;
-}
-
-.fc-day-sun{
-background:#fff5f5;
-}
-
-.serviceBox{
-font-size:12px;
-padding:2px;
-border-radius:4px;
-margin-top:2px;
-background:#f2f2f2;
-}
-
-.time{
-font-weight:bold;
-}
-
-.serviceBox {
-
-font-size:12px;
-padding:2px;
-
-}
-
-.time{
-
-font-weight:bold;
-
-}
-
-.fc-daygrid-day:hover {
-
-background:#eef6ff;
-cursor:pointer;
-
-}
-
-.serviceTooltip {
-
-    position: absolute;
-
-    display: none;
-
-    background: white;
-
-    border: 1px solid #ccc;
-
-    border-radius: 6px;
-
-    padding: 10px;
-
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-
-    font-size: 13px;
-
-    z-index: 9999;
-
-    min-width: 180px;
-
-}
-
-/* time */
-
-.tt-time {
-
-    font-weight: bold;
-
-    font-size: 14px;
-
-    margin-bottom: 5px;
-
-    color: #2c3e50;
-
-}
-
-/* sermon title */
-
-.tt-title {
-
-    margin-top: 6px;
-
-    font-style: italic;
-
-    color: #555;
-
-}
-
-.tooltip {
-    position: absolute;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 14px;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.15);
-    pointer-events: none;
-    display: none;
-    max-width: 250px;
-}
-
-.tooltip-time {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.tooltip-notes {
-    margin-top: 6px;
-    font-style: italic;
-    color: #666;
-}
-
-/* SERVICE EVENTS */
-
-.fc-event {
-    background: #f8f9ff;
-    border: 1px solid #d0d7ff;
-    border-radius: 6px;
-    padding: 3px;
-}
-
-.service-event {
-    text-align: center;
-}
-
-.service-time {
-    font-weight: bold;
-    font-size: 13px;
-    color: #2a2a2a;
-}
-
-.service-preacher {
-    font-size: 12px;
-    color: #444;
-}
-
-
-/* BETTER DAY CELLS */
-
-.fc-daygrid-day {
-    cursor: pointer;
-}
-
-.fc-daygrid-day:hover {
-    background-color: #fff8dc;
-}
-
-
-/* REMOVE UGLY DEFAULT BLUE */
-
-.fc-event-main {
-    padding: 0px !important;
-}
-
-.fc-event-title {
-    display: none;
-}
-
+  .tooltip { position: absolute; background: white; border: 1px solid #e5e7eb; border-radius: .5rem; padding: .75rem; font-size: 14px; box-shadow: 0 10px 20px rgba(0,0,0,.08); pointer-events: none; display: none; max-width: 280px; }
+  .tooltip .tooltip-time { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
 </style>
 
 <div id="tooltip" class="tooltip"></div>
-<div id="calendar"></div>
+
+<div class="mt-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3">
+  <div id="calendar"></div>
+</div>
 
 {% endblock %}
+

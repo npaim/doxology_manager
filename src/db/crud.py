@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+﻿from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from fastapi import HTTPException
 
@@ -33,13 +33,13 @@ def insert_song(
         if existing.title == title:
             raise HTTPException(
                 status_code=409,
-                detail="Este título já existe!",
+                detail="Este tÃ­tulo jÃ¡ existe!",
             )
 
         if existing.hymn_number == hymn_number:
             raise HTTPException(
                 status_code=409,
-                detail="Música com esse número já existe!",
+                detail="MÃºsica com esse nÃºmero jÃ¡ existe!",
             )
 
     # Insert
@@ -99,3 +99,38 @@ def add_song_to_service(
 
 def get_all_songs(db: Session):
     return db.query(Song).order_by(Song.title).all()
+def update_song(db: Session, song_id: int, title: str, hymn_number: int, misc: str | None = None):
+    # Normalize
+    title = title.upper()
+
+    # Check duplicates excluding current record
+    existing = (
+        db.query(Song)
+        .filter(or_(Song.title == title, Song.hymn_number == hymn_number))
+        .filter(Song.id != song_id)
+        .first()
+    )
+    if existing:
+        if existing.title == title:
+            raise HTTPException(status_code=409, detail="Este título já existe!")
+        if existing.hymn_number == hymn_number:
+            raise HTTPException(status_code=409, detail="Música com esse número já existe!")
+
+    song = db.query(Song).get(song_id)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+
+    song.title = title
+    song.hymn_number = hymn_number
+    song.misc = misc
+    db.commit()
+    db.refresh(song)
+    return song
+
+
+def delete_song(db: Session, song_id: int):
+    song = db.query(Song).get(song_id)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+    db.delete(song)
+    db.commit()
