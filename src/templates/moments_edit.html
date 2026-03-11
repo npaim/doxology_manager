@@ -1,0 +1,36 @@
+﻿{% extends "base.html" %}
+{% block title %}Edit Schedule{% endblock %}
+{% block content %}
+<div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6" data-service-id="{{ service.id }}">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-xl font-semibold">Edit Schedule — Service #{{ service.id }}</h1>
+    <div class="flex items-center gap-2">
+      <a href="/services/{{ service.id }}" class="px-3 py-2 rounded-md border text-sm hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">Back</a>
+      <button id="btn-save-all" class="inline-flex items-center rounded-md bg-brand px-3 py-2 text-white text-sm font-medium hover:bg-blue-600">Save All</button>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead>
+        <tr class="text-left border-b border-gray-200 dark:border-gray-700">
+          <th class="py-2 pr-2 w-16">Pos</th>
+          <th class="py-2 pr-2">Title</th>
+          <th class="py-2 pr-2">Responsible</th>
+          <th class="py-2 pr-2 w-28">Time</th>
+          <th class="py-2 pr-2">Notes</th>
+          <th class="py-2 pr-2 w-36">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="moments-edit-rows"></tbody>
+    </table>
+  </div>
+
+  <div class="mt-4">
+    <button id="btn-add-row" class="px-3 py-2 rounded-md border text-sm hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">Add Row</button>
+  </div>
+</div>
+
+<datalist id="members-datalist"></datalist>
+<script src="{{ url_for('static', path='/js/moments_edit.js') }}"></script>
+{% endblock %}

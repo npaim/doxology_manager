@@ -1,4 +1,4 @@
-﻿from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint, ForeignKey, Time, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint, ForeignKey, Time, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from src.db.base import Base
@@ -88,6 +88,33 @@ class Member(Base):
     is_active = Column(Boolean, nullable=False, server_default='1')
 
 
+# Preset moments template catalog
+class Template(Base):
+    __tablename__ = "templates"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    moments = relationship("Moment", back_populates="template")
+
+
+# Preset moments catalog
+class Moment(Base):
+    __tablename__ = "moments"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, nullable=False, unique=True)
+
+    template_id = Column(Integer, ForeignKey("templates.id", ondelete="RESTRICT"), nullable=True, index=True)
+    default_moment = Column(Boolean, nullable=False, server_default='0')
+    duration_min = Column(Integer, nullable=True)
+    position = Column(Integer, nullable=True)
+    is_active = Column(Boolean, nullable=False, server_default='1')
+
+    template = relationship("Template", back_populates="moments")
+    service_moments = relationship("ServiceMoment", back_populates="moment")
+
+
 class ServiceMoment(Base):
     __tablename__ = "service_moments"
 
@@ -99,8 +126,12 @@ class ServiceMoment(Base):
     time = Column(Time, nullable=True)
     notes = Column(String, nullable=True)
 
+    # link to preset moment (nullable for backward compatibility; can be enforced later)
+    moment_id = Column(Integer, ForeignKey("moments.id", ondelete="RESTRICT"), nullable=True, index=True)
+
     # optional link to a member
     responsible_member_id = Column(Integer, ForeignKey("members.id", ondelete="SET NULL"), nullable=True)
 
     service = relationship("Service", back_populates="moments")
     responsible_member = relationship("Member")
+    moment = relationship("Moment", back_populates="service_moments")

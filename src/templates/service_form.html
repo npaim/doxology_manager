@@ -45,7 +45,51 @@
     <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-white text-sm font-medium hover:bg-blue-600">
       {% if service %}<span data-i18n="update_service">Update Service</span>{% else %}<span data-i18n="save_service">Save Service</span>{% endif %}
     </button>
-    <a href="/" class="text-sm text-gray-700 hover:text-gray-900">← <span data-i18n="calendar">Calendar</span></a>
+    <a href="/" class="text-sm text-gray-700 hover:text-gray-900">&larr; <span data-i18n="calendar">Calendar</span></a>
+  </div>
+  {% if preset_moments %}
+  <hr class="my-6 border-gray-200 dark:border-gray-700">
+  <div class="flex items-center justify-between mb-3"><h2 class="text-lg font-semibold">Schedule</h2><button type="button" id="btn-autofill-times" class="text-xs px-2 py-1 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">Auto-fill times</button></div>
+  <input type="hidden" name="moments_count" value="{{ preset_moments|length }}">
+  <div class="space-y-3">
+    {% for m in preset_moments %}
+    <div class="rounded-md border border-gray-200 dark:border-gray-700 p-3" data-pos="{{ m.position or 9999 }}">
+      <div class="text-sm font-medium mb-2">{{ m.name }}</div>
+      <input type="hidden" name="moment_title_{{ loop.index }}" value="{{ m.name }}">
+      <input type="hidden" name="moment_id_{{ loop.index }}" value="{{ m.id }}">
+      <input type="hidden" name="moment_duration_{{ loop.index }}" value="{{ m.duration_min or '' }}">
+      <div class="grid sm:grid-cols-3 gap-3">
+        <label class="block text-sm">
+          <span class="text-gray-700">Time</span>
+          <input type="time" name="moment_time_{{ loop.index }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+        </label>
+        <label class="block text-sm sm:col-span-2">
+          <span class="text-gray-700">Responsible</span>
+          <input type="text" name="moment_responsible_{{ loop.index }}" data-member-autocomplete class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Name">
+        </label>
+        <label class="block text-sm sm:col-span-3">
+          <span class="text-gray-700">Notes</span>
+          <input type="text" name="moment_notes_{{ loop.index }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand" placeholder="Optional">
+        </label>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="mt-4" id="moment-adder">
+    <div class="flex items-center gap-2">
+      <select id="extra-moment-select" class="border rounded-md px-2 py-1 text-sm">
+        <option value="">Add moment…</option>
+        {% for m in extra_moments or [] %}
+        <option data-id="{{ m.id }}" data-position="{{ m.position or 9999 }}" data-duration="{{ m.duration_min or 0 }}" value="{{ m.name }}">{{ m.name }}</option>
+        {% endfor %}
+      </select>
+      <button type="button" id="add-moment" class="px-3 py-1 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm">Add</button>
+    </div>
   </div>
 </form>
+<script src="{{ url_for('static', path='/js/new_service.js') }}"></script>
 {% endblock %}
+
+
+

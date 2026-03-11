@@ -21,11 +21,12 @@
 
     function rowHTML(m){
       const time = m.time ? (typeof m.time === 'string' ? (m.time.length > 5 ? m.time.slice(0,5) : m.time) : '') : '';
-      const resp = m.responsible ? ' — <span class="text-gray-500">'+m.responsible+'</span>' : '';
+      const respName = m.responsible || '';
       return [
         '<li class="py-2 flex items-center justify-between gap-2">',
         '  <div class="min-w-0">',
-        '    <div class="text-sm"><span class="text-gray-500">', m.position, '.</span> <span class="font-medium">', m.title, '</span>', resp, '</div>',
+        '    <div class="text-sm"><span class="text-gray-500">', m.position, '.</span> <span class="font-medium">', m.title, '</span></div>',
+        '    <div class="text-xs text-gray-600 dark:text-gray-400">Responsible: ', (respName || '-'), '</div>',
         '    <div class="text-xs text-gray-500">', time, (m.notes ? ' · '+m.notes : ''), '</div>',
         '  </div>',
         '  <div class="flex items-center gap-2 shrink-0">',
@@ -109,28 +110,14 @@
         load();
         return;
       }
-      if (action === 'edit'){
-        const res0 = await fetch(`/api/services/${serviceId}/moments`);
-        const arr = await res0.json();
-        const m = arr.find(x => x.id === id);
-        window.__ui_onInit = ({ form, inputs }) => installMemberAutocomplete(form, inputs);
-        const values = await promptForm({
-          title: 'Edit Item',
-          fields: [
-            { name: 'title', label: 'Title', type: 'text', value: m.title, required: true },
-            { name: 'responsible', label: 'Responsible', type: 'text', value: m.responsible || '' },
-            { name: 'time', label: 'Time (HH:MM)', type: 'time', value: m.time || '' },
-            { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, value: m.notes || '' }
-          ]
-        });
-        window.__ui_onInit = null;
-        if (!values) return;
+      if (action === 'edit'){ window.open(/services//moments/edit, '_blank'); return; }
         let memberId = null;
         if ((values.responsible || '').trim().length > 0){
           const r = await fetch('/api/members/ensure', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: values.responsible.trim() }) });
           if (r.ok){ const mm = await r.json(); memberId = mm.id; values.responsible = mm.name; }
         }
-        const res = await fetch(`/api/services/${serviceId}/moments/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...values, responsible_member_id: memberId }) });
+        const payload = { ...values, position: parseInt(values.position || m.position || 1, 10), responsible_member_id: memberId };
+        const res = await fetch(`/api/services/${serviceId}/moments/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!res.ok){ UI.toast('Update failed', 'error'); return; }
         UI.toast('Updated', 'success');
         load();
@@ -154,3 +141,7 @@
     load();
   });
 })();
+
+
+
+

@@ -1,0 +1,159 @@
+                        notes=notes_val or None,
+                        responsible_member_id=responsible_member_id,
+                    )
+                    db.add(sm)
+                    pos += 1
+            db.commit()
+    except Exception:
+        # keep service creation even if schedule creation fails
+        pass
+
+    return RedirectResponse("/", status_code=303)
+
+
+@router.get("/services/{service_id}", response_class=HTMLResponse)
+def service_detail(
+    service_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    from src.db.models import Service
+    service = db.query(Service).get(service_id)
+    return templates.TemplateResponse("service_detail.html", {"request": request, "service": service})
+
+
+@router.get("/services/{service_id}/edit", response_class=HTMLResponse)
+def edit_service_form(
+    service_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    from src.db.models import Service
+    service = db.query(Service).get(service_id)
+    return templates.TemplateResponse("service_form.html", {"request": request, "service": service})
+
+
+@router.get("/songs", response_class=HTMLResponse)
+def songs_page(request: Request):
+    return templates.TemplateResponse("songs.html", {"request": request})
+
+
+@router.get("/services/{service_id}/print", response_class=HTMLResponse)
+def print_service(service_id: int, request: Request, db: Session = Depends(get_db)):
+    from src.db.models import Service, ServiceMoment
+    service = db.query(Service).get(service_id)
+    moments = (
+        db.query(ServiceMoment)
+        .filter(ServiceMoment.service_id == service_id)
+        .order_by(ServiceMoment.position)
+        .all()
+    )
+    return templates.TemplateResponse("service_print.html", {"request": request, "service": service, "moments": moments})
+
+
+@router.get("/services/{service_id}/moments/new", response_class=HTMLResponse)
+def new_moment_form(service_id: int, request: Request, db: Session = Depends(get_db)):
+    from src.db.models import Service
+    service = db.query(Service).get(service_id)
+    return templates.TemplateResponse(
+        "moment_form.html",
+        {"request": request, "service_id": service_id, "service_title": (service.title or "Service") if service else "Service"},
+    )
+
+
+@router.post("/services/{service_id}/moments/new", response_class=HTMLResponse)
+def create_moment_submit(
+    service_id: int,
+    request: Request,
+    title: str = Form(...),
+    responsible: str = Form(None),
+    time: str = Form(None),
+    notes: str = Form(None),
+    db: Session = Depends(get_db),
+):
+    from src.db.models import ServiceMoment, Member
+    max_pos = (
+        db.query(func.max(ServiceMoment.position))
+        .filter(ServiceMoment.service_id == service_id)
+        .scalar()
+        or 0
+    )
+    pos = int(max_pos) + 1
+
+    t = None
+    if time:
+        try:
+            t = datetime.strptime(time, "%H:%M").time()
+        except Exception:
+            t = None
+
+    responsible_member_id = None
+    if responsible and responsible.strip():
+        name = responsible.strip()
+        m = db.query(Member).filter(func.lower(Member.name) == func.lower(name)).first()
+        if not m:
+            m = Member(name=name)
+            db.add(m)
+            db.flush()
+        responsible_member_id = m.id
+
+    m = ServiceMoment(
+        service_id=service_id,
+        position=pos,
+        title=title,
+        responsible=responsible.strip() if responsible else None,
+        time=t,
+        notes=notes or None,
+        responsible_member_id=responsible_member_id,
+    )
+    db.add(m)
+    db.commit()
+    return RedirectResponse(f"/services/{service_id}", status_code=303)
+
+
+# Template-first new service flow
+@router.get("/services/new/choose", response_class=HTMLResponse)
+def choose_service_template(
+    request: Request,
+    date: str | None = None,
+    db: Session = Depends(get_db),
+):
+    from src.db.models import Template
+    templates_list = db.query(Template).order_by(Template.name).all()
+    return templates.TemplateResponse(
+        "service_template_select.html",
+        {"request": request, "templates": templates_list, "date": date},
+    )
+
+
+@router.get("/services/new_with_template", response_class=HTMLResponse)
+def new_service_with_template(
+    request: Request,
+    template_id: int,
+    date: str | None = None,
+    db: Session = Depends(get_db),
+):
+    from src.db.models import Moment
+    preset_moments = (
+        db.query(Moment).filter(Moment.template_id == template_id, Moment.is_active == True, Moment.default_moment == True)
+        .order_by(Moment.position, Moment.name)
+        .all()
+    )
+    return templates.TemplateResponse(
+        "service_form.html",
+        {
+            "request": request,
+            "service_date": date,
+            "start_time": "",
+            "end_time": "",
+            "preset_moments": preset_moments,
+
+            "extra_moments": db.query(Moment).filter(Moment.template_id == template_id, Moment.is_active == True, Moment.default_moment == False).order_by(Moment.position, Moment.name).all(),
+            "selected_template_id": template_id,
+        },
+    )
+
+
+
+
+

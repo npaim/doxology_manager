@@ -1,0 +1,15 @@
+﻿{% extends "base.html" %}
+{% block title %}Choose Template{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Choose Service Type</h1>
+<div class="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+  {% for t in templates %}
+  <a href="/services/new-with-template?template_id={{ t.id }}{% if date %}&date={{ date }}{% endif %}" class="block rounded-md border border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-800">
+    <div class="text-sm font-medium">{{ (t.name or '')|replace('_',' ')|title }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% if not templates or templates|length == 0 %}
+<div class="text-sm text-gray-500 mt-4">No templates found. Add some in the DB first.</div>
+{% endif %}
+{% endblock %}

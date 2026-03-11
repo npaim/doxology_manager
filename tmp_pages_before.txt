@@ -30,7 +30,6 @@ def ensure_member(db: Session, name: str | None):
     if not existing:
         m = Member(name=name)
         db.add(m)
-        db.flush()
 
 
 @router.get("/")
@@ -335,7 +334,7 @@ def new_service_with_template(
     from src.db.models import Moment
     preset_moments = (
         db.query(Moment)
-        .filter(Moment.template_id == template_id, Moment.is_active == True, Moment.default_moment == True)
+        .filter(Moment.template_id == template_id, Moment.is_active == True)
         .order_by(Moment.position, Moment.name)
         .all()
     )
@@ -347,16 +346,7 @@ def new_service_with_template(
             "start_time": "",
             "end_time": "",
             "preset_moments": preset_moments,
-            "extra_moments": db.query(Moment).filter(Moment.template_id == template_id, Moment.is_active == True, Moment.default_moment == False).order_by(Moment.position, Moment.name).all(),
             "selected_template_id": template_id,
         },
     )
 
-
-
-
-@router.get("/services/{service_id}/moments/edit", response_class=HTMLResponse)
-def edit_moments_page(service_id: int, request: Request, db: Session = Depends(get_db)):
-    from src.db.models import Service
-    service = db.query(Service).get(service_id)
-    return templates.TemplateResponse("moments_edit.html", {"request": request, "service": service})
