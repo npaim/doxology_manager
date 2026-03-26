@@ -6,10 +6,10 @@
       today: 'Today', month: 'Month', week: 'Week', day: 'Day',
       calendar: 'Calendar', songs: 'Songs', new_service: 'New Service', toggle_theme: 'Toggle Theme',
       calendar_title: 'Church Calendar', service: 'Service', details: 'Details', schedule: 'Schedule',
-      order_of_service: 'Order of Service', add_item: 'Add Item', edit: 'Edit', delete: 'Delete', back: 'Back',
+      order_of_service: 'Order of Service', add_item: 'Add Item', add_moment: 'Add Moment', edit: 'Edit', delete: 'Delete', back: 'Back',
       export_csv: 'Export CSV', print: 'Print', date: 'Date', start: 'Start', end: 'End',
       preacher: 'Preacher', leader: 'Leader', sermon_title: 'Sermon Title', notes: 'Notes',
-      no_items: 'No items yet. Click “Add Item”.', save_service: 'Save Service', update_service: 'Update Service',
+      no_items: 'No items yet. Click “Add Item”.', no_moments: 'No moments yet. Click "Add Moment".', save_service: 'Save Service', update_service: 'Update Service',
       service_leader: 'Service Leader', start_time: 'Start Time', end_time: 'End Time', add_song: 'Add Song',
       hymn_number: 'Hymn #', misc: 'Misc', upcoming: 'Upcoming'
     },
@@ -17,10 +17,10 @@
       today: 'Hoje', month: 'Mês', week: 'Semana', day: 'Dia',
       calendar: 'Calendário', songs: 'Cânticos', new_service: 'Novo Culto', toggle_theme: 'Tema',
       calendar_title: 'Calendário da Igreja', service: 'Culto', details: 'Detalhes', schedule: 'Ordem do Culto',
-      order_of_service: 'Ordem do Culto', add_item: 'Adicionar Item', edit: 'Editar', delete: 'Excluir', back: 'Voltar',
+      order_of_service: 'Ordem do Culto', add_item: 'Adicionar Item', add_moment: 'Adicionar Momento', edit: 'Editar', delete: 'Excluir', back: 'Voltar',
       export_csv: 'Exportar CSV', print: 'Imprimir', date: 'Data', start: 'Início', end: 'Fim',
       preacher: 'Pregador', leader: 'Dirigente', sermon_title: 'Título da Mensagem', notes: 'Observações',
-      no_items: 'Ainda sem itens. Clique em “Adicionar Item”.', save_service: 'Salvar Culto', update_service: 'Atualizar Culto',
+      no_items: 'Ainda sem itens. Clique em “Adicionar Item”.', no_moments: 'Ainda sem momentos. Clique em "Adicionar Momento".', save_service: 'Salvar Culto', update_service: 'Atualizar Culto',
       service_leader: 'Líder do Culto', start_time: 'Hora de Início', end_time: 'Hora de Término', add_song: 'Adicionar Cântico',
       hymn_number: 'Nº do Hinário', misc: 'Obs.', upcoming: 'Próximos'
     }

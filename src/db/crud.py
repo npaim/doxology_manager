@@ -1,79 +1,42 @@
-﻿from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from datetime import datetime
+
 from fastapi import HTTPException
+from sqlalchemy import or_
+from sqlalchemy.orm import Session
 
-from src.db.models import Song, Service, ServiceSong
-
-from datetime import datetime, timedelta
+from src.db.models import Service, ServiceSong, Song
 
 
-def insert_song(
-    db: Session,
-    title: str,
-    hymn_number: int,
-    misc: str | None = None,
-):
-
-    # Normalize title
+def insert_song(db: Session, title: str, hymn_number: int, misc: str | None = None):
     title = title.upper()
-
-    # Check duplicates
-    existing = (
-        db.query(Song)
-        .filter(
-            or_(
-                Song.title == title,
-                Song.hymn_number == hymn_number,
-            )
-        )
-        .first()
-    )
-
+    existing = db.query(Song).filter(or_(Song.title == title, Song.hymn_number == hymn_number)).first()
     if existing:
         if existing.title == title:
-            raise HTTPException(
-                status_code=409,
-                detail="Este tÃ­tulo jÃ¡ existe!",
-            )
-
+            raise HTTPException(status_code=409, detail="Este titulo ja existe!")
         if existing.hymn_number == hymn_number:
-            raise HTTPException(
-                status_code=409,
-                detail="MÃºsica com esse nÃºmero jÃ¡ existe!",
-            )
+            raise HTTPException(status_code=409, detail="Musica com esse numero ja existe!")
 
-    # Insert
-    song = Song(
-        title=title,
-        hymn_number=hymn_number,
-        misc=misc,
-    )
-
+    song = Song(title=title, hymn_number=hymn_number, misc=misc)
     db.add(song)
     db.commit()
     db.refresh(song)
-
     return song
 
 
 def get_all_songs(db: Session):
-    return db.query(Song).all()
+    return db.query(Song).order_by(Song.title).all()
 
 
 def get_song_by_number(db: Session, hymn_number: int):
     return db.query(Song).filter(Song.hymn_number == hymn_number).first()
 
 
-def get_services_for_month(db, year: int, month: int):
+def get_services_for_month(db: Session, church_id: int, year: int, month: int):
     start = datetime(year, month, 1)
-
-    if month == 12:
-        end = datetime(year + 1, 1, 1)
-    else:
-        end = datetime(year, month + 1, 1)
-
+    end = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
     return (
         db.query(Service)
+        .filter(Service.church_id == church_id)
         .filter(Service.service_date >= start)
         .filter(Service.service_date < end)
         .order_by(Service.service_date)
@@ -81,29 +44,14 @@ def get_services_for_month(db, year: int, month: int):
     )
 
 
-
-def add_song_to_service(
-    db: Session,
-    service_id: int,
-    song_id: int,
-    position: int,
-):
-    ss = ServiceSong(
-        service_id=service_id,
-        song_id=song_id,
-        position=position,
-    )
+def add_song_to_service(db: Session, service_id: int, song_id: int, position: int):
+    ss = ServiceSong(service_id=service_id, song_id=song_id, position=position)
     db.add(ss)
     db.commit()
 
 
-def get_all_songs(db: Session):
-    return db.query(Song).order_by(Song.title).all()
 def update_song(db: Session, song_id: int, title: str, hymn_number: int, misc: str | None = None):
-    # Normalize
     title = title.upper()
-
-    # Check duplicates excluding current record
     existing = (
         db.query(Song)
         .filter(or_(Song.title == title, Song.hymn_number == hymn_number))
@@ -112,11 +60,11 @@ def update_song(db: Session, song_id: int, title: str, hymn_number: int, misc: s
     )
     if existing:
         if existing.title == title:
-            raise HTTPException(status_code=409, detail="Este título já existe!")
+            raise HTTPException(status_code=409, detail="Este titulo ja existe!")
         if existing.hymn_number == hymn_number:
-            raise HTTPException(status_code=409, detail="Música com esse número já existe!")
+            raise HTTPException(status_code=409, detail="Musica com esse numero ja existe!")
 
-    song = db.query(Song).get(song_id)
+    song = db.query(Song).filter(Song.id == song_id).first()
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
 
@@ -129,7 +77,7 @@ def update_song(db: Session, song_id: int, title: str, hymn_number: int, misc: s
 
 
 def delete_song(db: Session, song_id: int):
-    song = db.query(Song).get(song_id)
+    song = db.query(Song).filter(Song.id == song_id).first()
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
     db.delete(song)

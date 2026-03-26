@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Church Admin{% endblock %}
+{% block content %}
+<div class="space-y-6">
+  <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+    <h1 class="mb-4 text-2xl font-semibold">Church Admin</h1>
+    <form method="post" action="/admin/church" class="flex flex-col gap-3 sm:flex-row sm:items-end">
+      <label class="block flex-1 text-sm font-medium">
+        <span class="text-gray-700 dark:text-gray-200">Church Name</span>
+        <input type="text" name="church_name" value="{{ church.name }}" required class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:border-brand focus:ring-brand">
+      </label>
+      <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-blue-600">Save Church</button>
+    </form>
+  </section>
+
+  <section class="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-xl font-semibold">Leaders</h2>
+      <a href="/leaders/new" class="rounded-md border px-3 py-2 text-sm hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">Add Leader</a>
+    </div>
+    <div class="space-y-4">
+      {% for leader in leaders %}
+      <form method="post" action="/admin/leaders/{{ leader.id }}" class="grid grid-cols-1 gap-3 rounded-md border border-gray-200 p-4 dark:border-gray-700 md:grid-cols-[1.5fr_1fr_auto_auto] md:items-end">
+        <div>
+          <div class="font-medium">{{ leader.name }}</div>
+          <div class="text-sm text-gray-500">{{ leader.email }}</div>
+        </div>
+        <label class="block text-sm font-medium">
+          <span class="text-gray-700 dark:text-gray-200">Role</span>
+          <select name="role" class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:border-brand focus:ring-brand">
+            <option value="leader" {% if leader.role == 'leader' %}selected{% endif %}>Leader</option>
+            <option value="admin" {% if leader.role == 'admin' %}selected{% endif %}>Admin</option>
+          </select>
+        </label>
+        <label class="inline-flex items-center gap-2 text-sm font-medium">
+          <input type="checkbox" name="is_active" value="true" {% if leader.is_active %}checked{% endif %}>
+          <span>Active</span>
+        </label>
+        <button type="submit" class="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-blue-600">Save</button>
+      </form>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,147 +1,281 @@
-﻿// Schedule (moments) UI for service detail
+// Schedule (moments) UI for service detail
 (function(){
-  function ready(fn){ if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn); else fn(); }
+  function ready(fn){
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
+
   ready(function(){
     const wrapper = document.querySelector('[data-service-id]');
     if (!wrapper) return;
-    console.debug('[schedule] init');
+
     const serviceId = Number(wrapper.getAttribute('data-service-id'));
     const listEl = document.getElementById('moments-list');
     const emptyEl = document.getElementById('moments-empty');
-    const addBtn = document.getElementById('btn-add-moment');
+    const presetSelect = document.getElementById('preset-moment-select');
+    const editorOverlay = document.getElementById('moment-editor-overlay');
+    const editorBackdrop = document.getElementById('moment-editor-backdrop');
+    const editorId = document.getElementById('moment-editor-id');
+    const editorTitle = document.getElementById('moment-editor-title');
+    const editorResponsible = document.getElementById('moment-editor-responsible');
+    const editorTime = document.getElementById('moment-editor-time');
+    const editorNotes = document.getElementById('moment-editor-notes');
+    const editorSave = document.getElementById('btn-save-moment-editor');
+    const editorClose = document.getElementById('btn-close-moment-editor');
+    const editorCancel = document.getElementById('btn-cancel-moment-editor');
 
-    const promptForm = (window.UI && UI.promptForm) ? UI.promptForm : (async (opts) => {
-      try {
-        const out = {}; for (const f of (opts?.fields||[])){
-          const v = window.prompt(((opts && opts.title)? opts.title+ ' — ' : '') + (f.label||f.name), f.value||'');
-          if (v === null) return null; out[f.name] = v;
-        } return out;
-      } catch(_) { return null; }
-    });
+    if (!serviceId || !listEl || !emptyEl) return;
 
-    function rowHTML(m){
-      const time = m.time ? (typeof m.time === 'string' ? (m.time.length > 5 ? m.time.slice(0,5) : m.time) : '') : '';
-      const respName = m.responsible || '';
+    function toast(message, type){
+      if (window.UI && UI.toast) UI.toast(message, type);
+    }
+
+    function installMemberAutocomplete(inp){
+      if (!inp) return;
+      const listId = 'members-datalist';
+      const dl = document.getElementById(listId);
+      if (!dl) return;
+      inp.setAttribute('list', listId);
+      let tmr = null;
+      inp.addEventListener('input', function(){
+        clearTimeout(tmr);
+        const q = inp.value.trim();
+        if (!q) {
+          dl.innerHTML = '';
+          return;
+        }
+        tmr = setTimeout(async function(){
+          try {
+            const res = await fetch('/api/members?q=' + encodeURIComponent(q));
+            const arr = await res.json();
+            dl.innerHTML = arr.map(function(m){ return '<option value="' + m.name + '"></option>'; }).join('');
+          } catch (_) {}
+        }, 200);
+      });
+    }
+
+    function openEditor(moment){
+      if (!editorOverlay) return;
+      editorId.value = String(moment.id || '');
+      editorTitle.value = moment.title || '';
+      editorResponsible.value = moment.responsible || '';
+      editorTime.value = moment.time ? String(moment.time).slice(0, 5) : '';
+      editorNotes.value = moment.notes || '';
+      editorOverlay.classList.remove('hidden');
+      editorTitle.focus();
+    }
+
+    function closeEditor(){
+      if (!editorOverlay) return;
+      editorOverlay.classList.add('hidden');
+      editorId.value = '';
+      editorTitle.value = '';
+      editorResponsible.value = '';
+      editorTime.value = '';
+      editorNotes.value = '';
+    }
+
+    function rowHTML(moment){
+      const time = moment.time ? String(moment.time).slice(0, 5) : '';
+      const responsible = moment.responsible || '-';
+      const notes = moment.notes ? ' - ' + moment.notes : '';
       return [
         '<li class="py-2 flex items-center justify-between gap-2">',
         '  <div class="min-w-0">',
-        '    <div class="text-sm"><span class="text-gray-500">', m.position, '.</span> <span class="font-medium">', m.title, '</span></div>',
-        '    <div class="text-xs text-gray-600 dark:text-gray-400">Responsible: ', (respName || '-'), '</div>',
-        '    <div class="text-xs text-gray-500">', time, (m.notes ? ' · '+m.notes : ''), '</div>',
+        '    <div class="text-sm"><span class="text-gray-500">', moment.position, '.</span> <span class="font-medium">', moment.title, '</span></div>',
+        '    <div class="text-xs text-gray-600 dark:text-gray-400">Responsible: ', responsible, '</div>',
+        '    <div class="text-xs text-gray-500">', time, notes, '</div>',
         '  </div>',
         '  <div class="flex items-center gap-2 shrink-0">',
-        '    <button data-id="', m.id, '" data-action="up" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700" title="Move up">↑</button>',
-        '    <button data-id="', m.id, '" data-action="down" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700" title="Move down">↓</button>',
-        '    <button data-id="', m.id, '" data-action="edit" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">Edit</button>',
-        '    <button data-id="', m.id, '" data-action="delete" class="px-2 py-1 rounded-md border text-xs text-red-600 border-red-300 hover:bg-red-50 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900/30">Delete</button>',
+        '    <button data-id="', moment.id, '" data-action="up" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700" title="Move up">Up</button>',
+        '    <button data-id="', moment.id, '" data-action="down" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700" title="Move down">Down</button>',
+        '    <button data-id="', moment.id, '" data-action="edit" class="px-2 py-1 rounded-md border text-xs hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-700">Edit</button>',
+        '    <button data-id="', moment.id, '" data-action="delete" class="px-2 py-1 rounded-md border text-xs text-red-600 border-red-300 hover:bg-red-50 dark:text-red-300 dark:border-red-700 dark:hover:bg-red-900/30">Delete</button>',
         '  </div>',
         '</li>'
       ].join('');
     }
 
     async function load(){
-      const res = await fetch(`/api/services/${serviceId}/moments`);
-      const moments = await res.json();
-      listEl.innerHTML = moments.map(rowHTML).join('');
-      emptyEl.classList.toggle('hidden', moments.length > 0);
-    }
-
-    function installMemberAutocomplete(form, inputs){
-      const inp = inputs['responsible'];
-      if (!inp) return;
-      const listId = 'members-datalist';
-      let dl = form.querySelector('#' + listId);
-      if (!dl) { dl = document.createElement('datalist'); dl.id = listId; form.appendChild(dl); }
-      inp.setAttribute('list', listId);
-      let tmr = null;
-      inp.addEventListener('input', () => {
-        clearTimeout(tmr);
-        const q = inp.value.trim();
-        if (q.length === 0) { dl.innerHTML = ''; return; }
-        tmr = setTimeout(async () => {
-          try {
-            const res = await fetch('/api/members?q=' + encodeURIComponent(q));
-            const arr = await res.json();
-            dl.innerHTML = arr.map(m => '<option value="'+m.name+'"></option>').join('');
-          } catch(_) {}
-        }, 200);
-      });
-    }
-
-    async function openAdd(){
-      window.__ui_onInit = ({ form, inputs }) => installMemberAutocomplete(form, inputs);
-      const values = await promptForm({
-        title: 'Add Item',
-        fields: [
-          { name: 'title', label: 'Title', type: 'text', value: '', required: true },
-          { name: 'responsible', label: 'Responsible', type: 'text', value: '' },
-          { name: 'time', label: 'Time (HH:MM)', type: 'time', value: '' },
-          { name: 'notes', label: 'Notes', type: 'textarea', rows: 3, value: '' }
-        ]
-      });
-      window.__ui_onInit = null;
-      if (!values) return;
-      let memberId = null;
-      if ((values.responsible || '').trim().length > 0){
-        const r = await fetch('/api/members/ensure', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: values.responsible.trim() }) });
-        if (r.ok){ const m = await r.json(); memberId = m.id; values.responsible = m.name; }
+      try {
+        const res = await fetch(`/api/services/${serviceId}/moments`);
+        if (!res.ok) throw new Error('load failed');
+        const moments = await res.json();
+        listEl.innerHTML = moments.map(rowHTML).join('');
+        emptyEl.classList.toggle('hidden', moments.length > 0);
+      } catch (_) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
       }
-      const res = await fetch(`/api/services/${serviceId}/moments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...values, responsible_member_id: memberId }) });
-      if (!res.ok){ UI.toast('Add failed', 'error'); return; }
-      UI.toast('Item added', 'success');
+    }
+
+    async function loadPresetMoments(){
+      if (!presetSelect) return;
+      try {
+        const res = await fetch(`/api/services/${serviceId}/preset-moments`);
+        if (!res.ok) throw new Error('preset load failed');
+        const moments = await res.json();
+        presetSelect.innerHTML = ['<option value="">Add moment...</option>']
+          .concat(moments.map(function(m){
+            const name = String(m.name || '');
+            return '<option value="' + name.replace(/"/g, '&quot;') + '" data-id="' + m.id + '" data-position="' + (m.position || 9999) + '" data-duration="' + (m.duration_min || 0) + '">' + name + '</option>';
+          }))
+          .join('');
+      } catch (_) {
+        presetSelect.innerHTML = '<option value="">Add moment...</option>';
+      }
+    }
+
+    async function moveMoment(id, direction){
+      const res = await fetch(`/api/services/${serviceId}/moments`);
+      if (!res.ok) {
+        toast('Reorder failed', 'error');
+        return;
+      }
+
+      const moments = await res.json();
+      const currentIndex = moments.findIndex(x => x.id === id);
+      if (currentIndex < 0) return;
+
+      const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      if (targetIndex < 0 || targetIndex >= moments.length) return;
+
+      const current = moments[currentIndex];
+      const target = moments[targetIndex];
+
+      await fetch(`/api/services/${serviceId}/moments/${current.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position: target.position })
+      });
+
+      await fetch(`/api/services/${serviceId}/moments/${target.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position: current.position })
+      });
+
       load();
     }
 
-    // Expose manual trigger and bind click
-    window.__addMoment = (e) => { try{ if(e){ e.preventDefault(); e.stopPropagation(); } }catch(_){}; openAdd(); return false; };
-    addBtn?.addEventListener('click', (e) => { console.debug('[schedule] add-click'); e.preventDefault(); e.stopPropagation(); openAdd(); });
+    async function editMoment(id){
+      try {
+        const res = await fetch(`/api/services/${serviceId}/moments`);
+        if (!res.ok) throw new Error('load failed');
+        const moments = await res.json();
+        const moment = moments.find(function(x){ return x.id === id; });
+        if (!moment) return;
+        openEditor(moment);
+      } catch (_) {
+        toast('Update failed', 'error');
+      }
+    }
 
-    listEl?.addEventListener('click', async (e) => {
+    presetSelect?.addEventListener('change', async function(){
+      const opt = presetSelect.options[presetSelect.selectedIndex];
+      const title = opt && opt.value ? opt.value.trim() : '';
+      if (!title) return;
+
+      const momentId = Number(opt.getAttribute('data-id')) || null;
+      const res = await fetch(`/api/services/${serviceId}/moments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title, moment_id: momentId })
+      });
+
+      if (!res.ok) {
+        toast('Add failed', 'error');
+        presetSelect.selectedIndex = 0;
+        return;
+      }
+
+      presetSelect.selectedIndex = 0;
+      toast('Moment added', 'success');
+      load();
+    });
+
+    editorSave?.addEventListener('click', async function(){
+      const id = Number(editorId.value);
+      if (!id) return;
+
+      let memberId = null;
+      const responsible = (editorResponsible.value || '').trim();
+      if (responsible) {
+        const memberRes = await fetch('/api/members/ensure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: responsible })
+        });
+        if (memberRes.ok) {
+          const member = await memberRes.json();
+          memberId = member.id;
+        }
+      }
+
+      const saveRes = await fetch(`/api/services/${serviceId}/moments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: (editorTitle.value || '').trim(),
+          responsible: responsible || null,
+          time: editorTime.value || null,
+          notes: (editorNotes.value || '').trim() || null,
+          responsible_member_id: memberId
+        })
+      });
+
+      if (!saveRes.ok) {
+        toast('Update failed', 'error');
+        return;
+      }
+
+      closeEditor();
+      toast('Updated', 'success');
+      load();
+    });
+
+    editorClose?.addEventListener('click', closeEditor);
+    editorCancel?.addEventListener('click', closeEditor);
+    editorBackdrop?.addEventListener('click', closeEditor);
+
+    listEl.addEventListener('click', async function(e){
       const btn = e.target.closest('button');
       if (!btn) return;
+
       const id = Number(btn.dataset.id);
       const action = btn.dataset.action;
-      if (action === 'delete'){
-        const ok = await UI.confirm('Delete this item?');
+      if (!id || !action) return;
+
+      if (action === 'delete') {
+        const ok = window.UI && UI.confirm ? await UI.confirm('Delete this item?') : window.confirm('Delete this item?');
         if (!ok) return;
+
         const res = await fetch(`/api/services/${serviceId}/moments/${id}`, { method: 'DELETE' });
-        if (!res.ok){ UI.toast('Delete failed', 'error'); return; }
-        UI.toast('Deleted', 'success');
-        load();
-        return;
-      }
-      if (action === 'edit'){ window.open(/services//moments/edit, '_blank'); return; }
-        let memberId = null;
-        if ((values.responsible || '').trim().length > 0){
-          const r = await fetch('/api/members/ensure', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name: values.responsible.trim() }) });
-          if (r.ok){ const mm = await r.json(); memberId = mm.id; values.responsible = mm.name; }
+        if (!res.ok) {
+          toast('Delete failed', 'error');
+          return;
         }
-        const payload = { ...values, position: parseInt(values.position || m.position || 1, 10), responsible_member_id: memberId };
-        const res = await fetch(`/api/services/${serviceId}/moments/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!res.ok){ UI.toast('Update failed', 'error'); return; }
-        UI.toast('Updated', 'success');
+
+        toast('Deleted', 'success');
         load();
         return;
       }
-      if (action === 'up' || action === 'down'){
-        const res0 = await fetch(`/api/services/${serviceId}/moments`);
-        const arr = await res0.json();
-        const idx = arr.findIndex(x => x.id === id);
-        if (idx < 0) return;
-        const swapWith = action === 'up' ? idx - 1 : idx + 1;
-        if (swapWith < 0 || swapWith >= arr.length) return;
-        const a = arr[idx];
-        const b = arr[swapWith];
-        await fetch(`/api/services/${serviceId}/moments/${a.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ position: b.position }) });
-        await fetch(`/api/services/${serviceId}/moments/${b.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ position: a.position }) });
-        load();
+
+      if (action === 'edit') {
+        editMoment(id);
+        return;
+      }
+
+      if (action === 'up' || action === 'down') {
+        moveMoment(id, action);
       }
     });
 
     load();
+    loadPresetMoments();
+    installMemberAutocomplete(editorResponsible);
   });
 })();
-
-
-
-

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Setup{% endblock %}
+{% block content %}
+<div class="mx-auto max-w-2xl rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+  <h1 class="mb-2 text-2xl font-semibold">Initial Setup</h1>
+  <p class="mb-6 text-sm text-gray-600 dark:text-gray-300">Register the church first, then create the first leader account for it.</p>
+  <form method="post" action="/setup" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <label class="block text-sm font-medium sm:col-span-2">
+      <span class="text-gray-700 dark:text-gray-200">Church Name</span>
+      <input type="text" name="church_name" required class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:border-brand focus:ring-brand">
+    </label>
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700 dark:text-gray-200">Leader Name</span>
+      <input type="text" name="leader_name" required class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:border-brand focus:ring-brand">
+    </label>
+    <label class="block text-sm font-medium">
+      <span class="text-gray-700 dark:text-gray-200">Leader Email</span>
+      <input type="email" name="email" required class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:border-brand focus:ring-brand">
+    </label>
+    <label class="block text-sm font-medium sm:col-span-2">
+      <span class="text-gray-700 dark:text-gray-200">Password</span>
+      <input type="password" name="password" required class="mt-1 w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 focus:border-brand focus:ring-brand">
+    </label>
+    <div class="sm:col-span-2">
+      <button type="submit" class="inline-flex items-center rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-blue-600">Create Church And Leader</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

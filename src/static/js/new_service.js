@@ -16,7 +16,10 @@
     wrap.className = 'rounded-md border border-gray-200 dark:border-gray-700 p-3';
     wrap.setAttribute('data-pos', String(isNaN(pos)?9999:pos));
     wrap.innerHTML = [
-      '<div class="text-sm font-medium mb-2">', title, '</div>',
+      '<div class="mb-2 flex items-start justify-between gap-3">',
+      '  <div class="text-sm font-medium">', title, '</div>',
+      '  <button type="button" class="remove-moment inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700" aria-label="Remove moment">x</button>',
+      '</div>',
       '<input type="hidden" name="moment_title_', idx, '" value="', title.replace(/"/g,'&quot;'), '">',
       (id ? ['<input type="hidden" name="moment_id_', idx, '" value="', id, '">'].join('') : ''),
       '<input type="hidden" name="moment_duration_', idx, '" value="', (duration||0), '">',
@@ -81,21 +84,35 @@
   }
   document.addEventListener('DOMContentLoaded', function(){
     const form = document.querySelector('form[action="/services/new"]');
-    if(form){ const container = form.querySelector('.space-y-3'); if(container) renumberAndSort(container); }
+    const container = form ? form.querySelector('.space-y-3') : null;
+    if(container){
+      renumberAndSort(container);
+      container.addEventListener('click', function(e){
+        const btn = e.target.closest('.remove-moment');
+        if(!btn) return;
+        const block = btn.closest('[data-pos]');
+        if(!block) return;
+        block.remove();
+        renumberAndSort(container);
+      });
+    }
     const sel = document.getElementById('extra-moment-select');
     const btnAdd = document.getElementById('add-moment');
     if(sel && btnAdd){
       btnAdd.addEventListener('click', function(){
-        const st = document.querySelector('input[name="start_time"]');
-        const hasStart = st && /^(\d{1,2}):(\d{2})$/.test(st.value);
-        if(!hasStart){ if(window.UI && UI.toast) UI.toast('Please set the service start time first', 'warning'); else alert('Please set the service start time first'); if(st) st.focus(); return; }
         const opt = sel.options[sel.selectedIndex];
-        const title = opt && opt.value ? opt.value : null; if(!title) return;
+        const title = opt && opt.value ? opt.value : '';
+        if(!title){
+          if(window.UI && UI.toast) UI.toast('Choose a moment from the list', 'warning');
+          return;
+        }
         const dur = parseInt(opt.getAttribute('data-duration') || '0');
         const id = opt.getAttribute('data-id') || '';
         const pos = parseInt(opt.getAttribute('data-position') || '9999');
         addDynamicMoment(title, isNaN(dur)?0:dur, id, pos);
         sel.selectedIndex = 0;
+        const start = document.querySelector('input[name="start_time"]');
+        if(start && /^(\d{1,2}):(\d{2})$/.test(start.value)) autofill(true);
       });
     }
     const btnAuto = document.getElementById('btn-autofill-times');

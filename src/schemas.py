@@ -53,6 +53,7 @@ class MomentBase(BaseModel):
 class MomentCreate(MomentBase):
     position: int | None = None  # append if not provided
     responsible_member_id: int | None = None
+    moment_id: int | None = None
 
 class MomentUpdate(BaseModel):
     title: str | None = None
@@ -61,6 +62,7 @@ class MomentUpdate(BaseModel):
     notes: str | None = None
     position: int | None = None
     responsible_member_id: int | None = None
+    moment_id: int | None = None
 
 class MomentRead(BaseModel):
     id: int
@@ -70,5 +72,6 @@ class MomentRead(BaseModel):
     time: dt.time | None
     notes: str | None
     responsible_member_id: int | None = None
+    moment_id: int | None = None
     class Config:
         from_attributes = True

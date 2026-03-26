@@ -47,14 +47,17 @@
     </button>
     <a href="/" class="text-sm text-gray-700 hover:text-gray-900">&larr; <span data-i18n="calendar">Calendar</span></a>
   </div>
-  {% if preset_moments %}
   <hr class="my-6 border-gray-200 dark:border-gray-700">
   <div class="flex items-center justify-between mb-3"><h2 class="text-lg font-semibold">Schedule</h2><button type="button" id="btn-autofill-times" class="text-xs px-2 py-1 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">Auto-fill times</button></div>
-  <input type="hidden" name="moments_count" value="{{ preset_moments|length }}">
+  <input type="hidden" name="moments_count" value="{{ preset_moments|length if preset_moments else 0 }}">
   <div class="space-y-3">
+    {% if preset_moments %}
     {% for m in preset_moments %}
     <div class="rounded-md border border-gray-200 dark:border-gray-700 p-3" data-pos="{{ m.position or 9999 }}">
-      <div class="text-sm font-medium mb-2">{{ m.name }}</div>
+      <div class="mb-2 flex items-start justify-between gap-3">
+        <div class="text-sm font-medium">{{ m.name }}</div>
+        <button type="button" class="remove-moment inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700" aria-label="Remove moment">x</button>
+      </div>
       <input type="hidden" name="moment_title_{{ loop.index }}" value="{{ m.name }}">
       <input type="hidden" name="moment_id_{{ loop.index }}" value="{{ m.id }}">
       <input type="hidden" name="moment_duration_{{ loop.index }}" value="{{ m.duration_min or '' }}">
@@ -74,8 +77,8 @@
       </div>
     </div>
     {% endfor %}
+    {% endif %}
   </div>
-  {% endif %}
   <div class="mt-4" id="moment-adder">
     <div class="flex items-center gap-2">
       <select id="extra-moment-select" class="border rounded-md px-2 py-1 text-sm">

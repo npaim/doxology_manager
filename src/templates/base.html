@@ -41,9 +41,18 @@
           </a>
         </div>
         <nav class="hidden lg:flex items-center gap-2">
+          {% if request.session.get('leader_id') %}
           <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="calendar">Calendar</a>
-          <a href="/songs" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="songs">Songs</a>
+          {% if request.session.get('leader_role') == 'admin' %}
+          <a href="/admin/church" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Church Admin</a>
+          <a href="/leaders/new" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Add Leader</a>
+          {% endif %}
           <a href="/services/new/choose" class="px-3 py-2 rounded-md text-sm font-medium bg-brand text-white hover:bg-blue-600" data-i18n="new_service">New Service</a>
+          <div class="px-3 text-xs text-gray-500">{{ request.session.get('church_name') }}</div>
+          <form method="post" action="/logout"><button type="submit" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Logout</button></form>
+          {% else %}
+          <a href="/login" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Login</a>
+          {% endif %}
           <button id="theme-toggle" class="ml-1 inline-flex items-center justify-center px-2 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle theme">
             <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:inline" viewBox="0 0 24 24" fill="currentColor"><path d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm9.83-18.16l-1.79-1.79-1.8 1.79 1.8 1.79 1.79-1.79zM20 13h3v-2h-3v2zM6.76 19.16l-1.8 1.79 1.8 1.79 1.79-1.79-1.79-1.79zM17.24 19.16l1.79 1.79 1.8-1.79-1.8-1.79-1.79 1.79zM12 6a6 6 0 100 12 6 6 0 000-12z"/></svg>
             <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M21.64 13a8.64 8.64 0 01-11.3-11.3A10 10 0 1021.64 13z"/></svg>
@@ -63,19 +72,28 @@
           </button>
         </div>
         <nav class="space-y-1">
+          {% if request.session.get('leader_id') %}
           <a href="/" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="calendar">Calendar</a>
-          <a href="/songs" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="songs">Songs</a>
+          {% if request.session.get('leader_role') == 'admin' %}
+          <a href="/admin/church" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Church Admin</a>
+          <a href="/leaders/new" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Add Leader</a>
+          {% endif %}
           <a href="/services/new/choose" class="block px-3 py-2 rounded-md bg-brand text-white hover:bg-blue-600" data-i18n="new_service">New Service</a>
+          <form method="post" action="/logout"><button type="submit" class="block w-full px-3 py-2 rounded-md text-left hover:bg-gray-100 dark:hover:bg-gray-700">Logout</button></form>
+          {% else %}
+          <a href="/login" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Login</a>
+          {% endif %}
           <button id="theme-toggle-mobile" class="mt-2 w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="toggle_theme">Toggle Theme</button>
         </nav>
       </div>
     </div>
 
     <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-      <div class="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
+      <div class="grid {% if request.session.get('leader_id') %}lg:grid-cols-[1fr_320px]{% endif %} gap-6 items-start">
         <div class="min-w-0">
           {% block content %}{% endblock %}
         </div>
+        {% if request.session.get('leader_id') %}
         <aside class="hidden lg:block">
           <div class="sticky top-20">
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
@@ -87,6 +105,7 @@
             </div>
           </div>
         </aside>
+        {% endif %}
       </div>
     </main>
   </div>
