@@ -26,7 +26,7 @@
       '<div class="grid sm:grid-cols-3 gap-3">',
       '  <label class="block text-sm">',
       '    <span class="text-gray-700">Time</span>',
-      '    <input type="time" name="moment_time_', idx, '" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">',
+      '    <input type="time" name="moment_time_', idx, '" class="dm-time-field mt-1 w-full rounded-md border-gray-300 pr-10 focus:border-brand focus:ring-brand">',
       '  </label>',
       '  <label class="block text-sm sm:col-span-2">',
       '    <span class="text-gray-700">Responsible</span>',

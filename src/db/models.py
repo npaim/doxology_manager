@@ -60,8 +60,10 @@ class Service(Base):
     leader = Column(String, nullable=True)
     title = Column(String, nullable=True)
     notes = Column(String, nullable=True)
+    template_id = Column(Integer, ForeignKey("templates.id", ondelete="SET NULL"), nullable=True, index=True)
 
     church = relationship("Church", back_populates="services")
+    template = relationship("Template", back_populates="services")
     songs = relationship("ServiceSong", back_populates="service", cascade="all, delete-orphan", order_by="ServiceSong.position")
     moments = relationship("ServiceMoment", back_populates="service", cascade="all, delete-orphan", order_by="ServiceMoment.position")
 
@@ -97,6 +99,7 @@ class Template(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False, unique=True)
 
+    services = relationship("Service", back_populates="template")
     moments = relationship("Moment", back_populates="template")
 
 

@@ -1,6 +1,6 @@
 // Sidebar: Upcoming services
 (function(){
-  document.addEventListener('DOMContentLoaded', async function(){
+  async function renderUpcoming(){
     const root = document.getElementById('sidebar-upcoming');
     if (!root) return;
     try {
@@ -24,5 +24,8 @@
     } catch(e){
       root.innerHTML = `<div class="text-sm text-red-600">Error loading upcoming</div>`;
     }
-  });
+  }
+
+  document.addEventListener('DOMContentLoaded', renderUpcoming);
+  document.addEventListener('dm:language-changed', renderUpcoming);
 })();

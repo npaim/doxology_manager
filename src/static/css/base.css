@@ -8,3 +8,14 @@ body {
 h1 {
   text-align: center;
 }
+
+input.dm-time-field::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding: 0;
+  opacity: 0.72;
+  cursor: pointer;
+}
+
+input.dm-time-field {
+  min-height: 2.625rem;
+}

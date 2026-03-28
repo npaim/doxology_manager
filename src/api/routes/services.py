@@ -21,6 +21,26 @@ def get_service_or_404(db: Session, church_id: int, service_id: int) -> Service:
     return service
 
 
+def resolve_service_template_name(db: Session, service: Service) -> str | None:
+    if getattr(service, "template", None) and service.template.name:
+        return service.template.name
+    if getattr(service, "template_id", None):
+        name = db.query(Template.name).filter(Template.id == service.template_id).scalar()
+        if name:
+            return name
+
+    template_ids = [tid for (tid,) in (
+        db.query(Moment.template_id)
+        .join(ServiceMoment, ServiceMoment.moment_id == Moment.id)
+        .filter(ServiceMoment.service_id == service.id, Moment.template_id.isnot(None))
+        .distinct()
+        .all()
+    ) if tid is not None]
+    if len(template_ids) == 1:
+        return db.query(Template.name).filter(Template.id == template_ids[0]).scalar()
+    return None
+
+
 @router.get("/api/services")
 def api_services(db: Session = Depends(get_db), leader: Leader = Depends(get_current_leader)):
     services = db.query(Service).filter(Service.church_id == leader.church_id).order_by(Service.service_date).all()
@@ -36,6 +56,7 @@ def api_services(db: Session = Depends(get_db), leader: Leader = Depends(get_cur
                 "leader": s.leader,
                 "title": s.title,
                 "notes": s.notes,
+                "template_name": resolve_service_template_name(db, s),
             },
         }
         for s in services
@@ -136,15 +157,19 @@ def delete_moment(service_id: int, moment_id: int, db: Session = Depends(get_db)
 
 @router.get("/api/services/{service_id}/preset-moments")
 def service_preset_moments(service_id: int, db: Session = Depends(get_db), leader: Leader = Depends(get_current_leader)):
-    get_service_or_404(db, leader.church_id, service_id)
+    service = get_service_or_404(db, leader.church_id, service_id)
 
-    template_ids = [tid for (tid,) in (
-        db.query(Moment.template_id)
-        .join(ServiceMoment, ServiceMoment.moment_id == Moment.id)
-        .filter(ServiceMoment.service_id == service_id, Moment.template_id.isnot(None))
-        .distinct()
-        .all()
-    ) if tid is not None]
+    template_ids: list[int] = []
+    if getattr(service, "template_id", None):
+        template_ids = [service.template_id]
+    else:
+        template_ids = [tid for (tid,) in (
+            db.query(Moment.template_id)
+            .join(ServiceMoment, ServiceMoment.moment_id == Moment.id)
+            .filter(ServiceMoment.service_id == service_id, Moment.template_id.isnot(None))
+            .distinct()
+            .all()
+        ) if tid is not None]
 
     if not template_ids:
         matched_moment_ids = [mid for (mid,) in (

@@ -54,6 +54,43 @@ def get_service_for_leader(db: Session, church_id: int, service_id: int) -> Serv
     return db.query(Service).filter(Service.id == service_id, Service.church_id == church_id).first()
 
 
+def resolve_service_template(db: Session, service: Service) -> Template | None:
+    if getattr(service, "template", None):
+        return service.template
+    if getattr(service, "template_id", None):
+        return db.query(Template).filter(Template.id == service.template_id).first()
+
+    template_ids = [
+        tid for (tid,) in (
+            db.query(Moment.template_id)
+            .join(ServiceMoment, ServiceMoment.moment_id == Moment.id)
+            .filter(ServiceMoment.service_id == service.id, Moment.template_id.isnot(None))
+            .distinct()
+            .all()
+        ) if tid is not None
+    ]
+    if len(template_ids) == 1:
+        return db.query(Template).filter(Template.id == template_ids[0]).first()
+    return None
+
+
+def get_template_moment_options(db: Session, template: Template | None):
+    if not template:
+        return [], []
+    preset_moments = (
+        db.query(Moment)
+        .filter(Moment.template_id == template.id, Moment.is_active == True, Moment.default_moment == True)
+        .order_by(Moment.position, Moment.name)
+        .all()
+    )
+    is_livre = bool((template.name or "").strip().lower() == "livre")
+    extra_moments_query = db.query(Moment).filter(Moment.is_active == True)
+    if not is_livre:
+        extra_moments_query = extra_moments_query.filter(Moment.template_id == template.id)
+    extra_moments = extra_moments_query.order_by(Moment.position, Moment.name).all()
+    return preset_moments, extra_moments
+
+
 @router.get("/setup", response_class=HTMLResponse)
 def setup_page(request: Request, db: Session = Depends(get_db)):
     if not setup_incomplete(db):
@@ -258,13 +295,15 @@ def new_service_form(request: Request, date: str | None = None, db: Session = De
     leader = require_page_leader(request, db)
     if isinstance(leader, RedirectResponse):
         return leader
-    return templates.TemplateResponse("service_form.html", {"request": request, "service_date": date, "start_time": "", "end_time": ""})
+    selected_date = date or datetime.today().strftime("%Y-%m-%d")
+    return templates.TemplateResponse("service_form.html", {"request": request, "service_date": selected_date, "start_time": "", "end_time": ""})
 
 
 @router.post("/services/new")
 async def save_service(
     request: Request,
     service_id: int = Form(None),
+    selected_template_id: int | None = Form(None),
     service_date: str = Form(...),
     start_time: str = Form(...),
     end_time: str = Form(...),
@@ -290,6 +329,7 @@ async def save_service(
         service.leader = leader
         service.title = title
         service.notes = notes
+        service.template_id = selected_template_id
         ensure_member(db, preacher)
         ensure_member(db, leader)
         db.commit()
@@ -300,10 +340,10 @@ async def save_service(
         st_start = datetime.strptime(start_time, "%H:%M").time()
         st_end = datetime.strptime(end_time, "%H:%M").time()
     except Exception:
-        return templates.TemplateResponse("service_form.html", {"request": request, "service_date": service_date, "start_time": start_time, "end_time": end_time, "error": "Please provide a valid date and time."}, status_code=400)
+        return templates.TemplateResponse("service_form.html", {"request": request, "service_date": service_date, "start_time": start_time, "end_time": end_time, "selected_template_id": selected_template_id, "error": "Please provide a valid date and time."}, status_code=400)
 
     if st_end < st_start:
-        return templates.TemplateResponse("service_form.html", {"request": request, "service_date": service_date, "start_time": start_time, "end_time": end_time, "error": "End time must be after start time."}, status_code=400)
+        return templates.TemplateResponse("service_form.html", {"request": request, "service_date": service_date, "start_time": start_time, "end_time": end_time, "selected_template_id": selected_template_id, "error": "End time must be after start time."}, status_code=400)
 
     service = Service(
         church_id=current_leader.church_id,
@@ -316,6 +356,7 @@ async def save_service(
         leader=leader,
         title=title,
         notes=notes,
+        template_id=selected_template_id,
     )
     db.add(service)
     ensure_member(db, preacher)
@@ -361,7 +402,8 @@ def service_detail(service_id: int, request: Request, db: Session = Depends(get_
     service = get_service_for_leader(db, leader.church_id, service_id)
     if not service:
         return RedirectResponse("/", status_code=303)
-    return templates.TemplateResponse("service_detail.html", {"request": request, "service": service})
+    service_template = resolve_service_template(db, service)
+    return templates.TemplateResponse("service_detail.html", {"request": request, "service": service, "service_template": service_template})
 
 
 @router.get("/services/{service_id}/edit", response_class=HTMLResponse)
@@ -372,7 +414,19 @@ def edit_service_form(service_id: int, request: Request, db: Session = Depends(g
     service = get_service_for_leader(db, leader.church_id, service_id)
     if not service:
         return RedirectResponse("/", status_code=303)
-    return templates.TemplateResponse("service_form.html", {"request": request, "service": service})
+    service_template = resolve_service_template(db, service)
+    preset_moments, extra_moments = get_template_moment_options(db, service_template)
+    return templates.TemplateResponse(
+        "service_form.html",
+        {
+            "request": request,
+            "service": service,
+            "selected_template_id": (service.template_id or (service_template.id if service_template else None)),
+            "selected_template_name": (service_template.name if service_template else None),
+            "preset_moments": preset_moments,
+            "extra_moments": extra_moments,
+        },
+    )
 
 
 @router.get("/songs", response_class=HTMLResponse)
@@ -445,7 +499,8 @@ def choose_service_template(request: Request, date: str | None = None, db: Sessi
     if isinstance(leader, RedirectResponse):
         return leader
     templates_list = db.query(Template).order_by(Template.name).all()
-    return templates.TemplateResponse("service_template_select.html", {"request": request, "templates": templates_list, "date": date})
+    selected_date = date or datetime.today().strftime("%Y-%m-%d")
+    return templates.TemplateResponse("service_template_select.html", {"request": request, "templates": templates_list, "date": selected_date})
 
 
 @router.get("/services/new_with_template", response_class=HTMLResponse)
@@ -458,12 +513,9 @@ def new_service_with_template(request: Request, template_id: int, date: str | No
     if not template:
         return RedirectResponse("/services/new/choose", status_code=303)
 
-    preset_moments = db.query(Moment).filter(Moment.template_id == template_id, Moment.is_active == True, Moment.default_moment == True).order_by(Moment.position, Moment.name).all()
-    is_livre = bool((template.name or "").strip().lower() == "livre")
-    extra_moments_query = db.query(Moment).filter(Moment.is_active == True)
-    if not is_livre:
-        extra_moments_query = extra_moments_query.filter(Moment.template_id == template_id)
-    return templates.TemplateResponse("service_form.html", {"request": request, "service_date": date, "start_time": "", "end_time": "", "preset_moments": preset_moments, "extra_moments": extra_moments_query.order_by(Moment.position, Moment.name).all(), "selected_template_id": template_id})
+    preset_moments, extra_moments = get_template_moment_options(db, template)
+    selected_date = date or datetime.today().strftime("%Y-%m-%d")
+    return templates.TemplateResponse("service_form.html", {"request": request, "service_date": selected_date, "start_time": "", "end_time": "", "preset_moments": preset_moments, "extra_moments": extra_moments, "selected_template_id": template_id, "selected_template_name": template.name})
 
 
 @router.get("/services/{service_id}/moments/edit", response_class=HTMLResponse)

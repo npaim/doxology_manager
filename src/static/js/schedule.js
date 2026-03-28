@@ -15,7 +15,10 @@
     const serviceId = Number(wrapper.getAttribute('data-service-id'));
     const listEl = document.getElementById('moments-list');
     const emptyEl = document.getElementById('moments-empty');
-    const presetSelect = document.getElementById('preset-moment-select');
+    const presetTrigger = document.getElementById('preset-moment-trigger');
+    const presetLabel = document.getElementById('preset-moment-label');
+    const presetMenu = document.getElementById('preset-moment-menu');
+    const addPresetBtn = document.getElementById('btn-add-preset-moment');
     const editorOverlay = document.getElementById('moment-editor-overlay');
     const editorBackdrop = document.getElementById('moment-editor-backdrop');
     const editorId = document.getElementById('moment-editor-id');
@@ -29,8 +32,38 @@
 
     if (!serviceId || !listEl || !emptyEl) return;
 
+    let presetMoments = [];
+    let selectedPreset = null;
+
     function toast(message, type){
       if (window.UI && UI.toast) UI.toast(message, type);
+    }
+
+    function syncAddPresetState(){
+      if (!addPresetBtn) return;
+      addPresetBtn.disabled = !selectedPreset;
+      if (presetLabel) presetLabel.textContent = selectedPreset ? selectedPreset.name : 'Add moment...';
+    }
+
+    function closePresetMenu(){
+      presetMenu?.classList.add('hidden');
+    }
+
+    function openPresetMenu(){
+      if (!presetMenu || presetMoments.length === 0) return;
+      presetMenu.classList.remove('hidden');
+    }
+
+    function renderPresetMenu(){
+      if (!presetMenu) return;
+      if (presetMoments.length === 0) {
+        presetMenu.innerHTML = '<div class="px-3 py-2 text-sm text-gray-500">No moments available</div>';
+        return;
+      }
+      presetMenu.innerHTML = presetMoments.map(function(m){
+        const isSelected = selectedPreset && selectedPreset.id === m.id;
+        return '<button type="button" class="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700' + (isSelected ? ' bg-gray-100 dark:bg-gray-700' : '') + '" data-preset-id="' + m.id + '">' + String(m.name || '') + '</button>';
+      }).join('');
     }
 
     function installMemberAutocomplete(inp){
@@ -113,20 +146,46 @@
     }
 
     async function loadPresetMoments(){
-      if (!presetSelect) return;
+      if (!presetMenu) return;
       try {
         const res = await fetch(`/api/services/${serviceId}/preset-moments`);
         if (!res.ok) throw new Error('preset load failed');
-        const moments = await res.json();
-        presetSelect.innerHTML = ['<option value="">Add moment...</option>']
-          .concat(moments.map(function(m){
-            const name = String(m.name || '');
-            return '<option value="' + name.replace(/"/g, '&quot;') + '" data-id="' + m.id + '" data-position="' + (m.position || 9999) + '" data-duration="' + (m.duration_min || 0) + '">' + name + '</option>';
-          }))
-          .join('');
+        presetMoments = await res.json();
+        selectedPreset = null;
+        renderPresetMenu();
+        syncAddPresetState();
       } catch (_) {
-        presetSelect.innerHTML = '<option value="">Add moment...</option>';
+        presetMoments = [];
+        selectedPreset = null;
+        renderPresetMenu();
+        syncAddPresetState();
       }
+    }
+
+    async function addSelectedPresetMoment(){
+      if (!selectedPreset) return;
+      const title = (selectedPreset.name || '').trim();
+      if (!title) return;
+
+      const res = await fetch(`/api/services/${serviceId}/moments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title, moment_id: selectedPreset.id || null })
+      });
+
+      if (!res.ok) {
+        toast('Add failed', 'error');
+        selectedPreset = null;
+        syncAddPresetState();
+        return;
+      }
+
+      selectedPreset = null;
+      syncAddPresetState();
+      renderPresetMenu();
+      closePresetMenu();
+      toast('Moment added', 'success');
+      load();
     }
 
     async function moveMoment(id, direction){
@@ -174,27 +233,25 @@
       }
     }
 
-    presetSelect?.addEventListener('change', async function(){
-      const opt = presetSelect.options[presetSelect.selectedIndex];
-      const title = opt && opt.value ? opt.value.trim() : '';
-      if (!title) return;
-
-      const momentId = Number(opt.getAttribute('data-id')) || null;
-      const res = await fetch(`/api/services/${serviceId}/moments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title, moment_id: momentId })
-      });
-
-      if (!res.ok) {
-        toast('Add failed', 'error');
-        presetSelect.selectedIndex = 0;
-        return;
-      }
-
-      presetSelect.selectedIndex = 0;
-      toast('Moment added', 'success');
-      load();
+    presetTrigger?.addEventListener('click', function(){
+      if (!presetMenu) return;
+      if (presetMenu.classList.contains('hidden')) openPresetMenu();
+      else closePresetMenu();
+    });
+    addPresetBtn?.addEventListener('click', addSelectedPresetMoment);
+    presetMenu?.addEventListener('click', function(e){
+      const btn = e.target.closest('[data-preset-id]');
+      if (!btn) return;
+      const id = Number(btn.getAttribute('data-preset-id'));
+      selectedPreset = presetMoments.find(function(m){ return m.id === id; }) || null;
+      renderPresetMenu();
+      syncAddPresetState();
+      closePresetMenu();
+    });
+    document.addEventListener('click', function(e){
+      if (!presetMenu || presetMenu.classList.contains('hidden')) return;
+      if (presetMenu.contains(e.target) || presetTrigger?.contains(e.target)) return;
+      closePresetMenu();
     });
 
     editorSave?.addEventListener('click', async function(){

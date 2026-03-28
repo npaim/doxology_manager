@@ -47,5 +47,6 @@ async def new_service_with_template_alias(
             "preset_moments": preset_moments,
             "extra_moments": extra_moments_query.order_by(Moment.position, Moment.name).all(),
             "selected_template_id": template_id,
+            "selected_template_name": template.name,
         },
     )

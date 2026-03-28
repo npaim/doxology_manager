@@ -11,18 +11,25 @@
   {% if service %}
   <input type="hidden" name="service_id" value="{{ service.id }}">
   {% endif %}
+  <input type="hidden" name="selected_template_id" value="{{ selected_template_id if selected_template_id is defined else (service.template_id if service and service.template_id else '') }}">
+  {% if selected_template_name %}
+  <div class="mb-4 rounded-md border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
+    <div class="text-sm text-gray-500"><span data-i18n="service_template">Service Template</span></div>
+    <div class="font-medium">{{ selected_template_name }}</div>
+  </div>
+  {% endif %}
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
     <label class="block text-sm font-medium">
       <span class="text-gray-700" data-i18n="date">Date</span>
-      <input type="date" name="service_date" required value="{{ service.service_date.strftime('%Y-%m-%d') if service else service_date }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+      <input type="date" name="service_date" required value="{{ service.service_date.strftime('%Y-%m-%d') if service else service_date }}" class="mt-1 w-full rounded-md border-gray-300 pr-10 focus:border-brand focus:ring-brand dm-time-field">
     </label>
     <label class="block text-sm font-medium">
       <span class="text-gray-700" data-i18n="start_time">Start Time</span>
-      <input type="time" name="start_time" required value="{{ service.start_time.strftime('%H:%M') if service and service.start_time else (service.service_time.strftime('%H:%M') if service and service.service_time else (start_time or '')) }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+      <input type="time" name="start_time" required value="{{ service.start_time.strftime('%H:%M') if service and service.start_time else (service.service_time.strftime('%H:%M') if service and service.service_time else (start_time or '')) }}" class="mt-1 w-full rounded-md border-gray-300 pr-10 focus:border-brand focus:ring-brand dm-time-field">
     </label>
     <label class="block text-sm font-medium">
       <span class="text-gray-700" data-i18n="end_time">End Time</span>
-      <input type="time" name="end_time" required value="{{ service.end_time.strftime('%H:%M') if service and service.end_time else (service.service_time.strftime('%H:%M') if service and service.service_time else (end_time or '')) }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+      <input type="time" name="end_time" required value="{{ service.end_time.strftime('%H:%M') if service and service.end_time else (service.service_time.strftime('%H:%M') if service and service.service_time else (end_time or '')) }}" class="mt-1 w-full rounded-md border-gray-300 pr-10 focus:border-brand focus:ring-brand dm-time-field">
     </label>
     <label class="block text-sm font-medium sm:col-span-2">
       <span class="text-gray-700" data-i18n="preacher">Preacher</span>
@@ -64,7 +71,7 @@
       <div class="grid sm:grid-cols-3 gap-3">
         <label class="block text-sm">
           <span class="text-gray-700">Time</span>
-          <input type="time" name="moment_time_{{ loop.index }}" class="mt-1 w-full rounded-md border-gray-300 focus:border-brand focus:ring-brand">
+          <input type="time" name="moment_time_{{ loop.index }}" class="mt-1 w-full rounded-md border-gray-300 pr-10 focus:border-brand focus:ring-brand dm-time-field">
         </label>
         <label class="block text-sm sm:col-span-2">
           <span class="text-gray-700">Responsible</span>

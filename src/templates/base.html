@@ -44,14 +44,14 @@
           {% if request.session.get('leader_id') %}
           <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="calendar">Calendar</a>
           {% if request.session.get('leader_role') == 'admin' %}
-          <a href="/admin/church" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Church Admin</a>
-          <a href="/leaders/new" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Add Leader</a>
+          <a href="/admin/church" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="church_admin">Church Admin</a>
+          <a href="/leaders/new" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="add_leader">Add Leader</a>
           {% endif %}
           <a href="/services/new/choose" class="px-3 py-2 rounded-md text-sm font-medium bg-brand text-white hover:bg-blue-600" data-i18n="new_service">New Service</a>
           <div class="px-3 text-xs text-gray-500">{{ request.session.get('church_name') }}</div>
-          <form method="post" action="/logout"><button type="submit" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Logout</button></form>
+          <form method="post" action="/logout"><button type="submit" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="logout">Logout</button></form>
           {% else %}
-          <a href="/login" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">Login</a>
+          <a href="/login" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="login">Login</a>
           {% endif %}
           <button id="theme-toggle" class="ml-1 inline-flex items-center justify-center px-2 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle theme">
             <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:inline" viewBox="0 0 24 24" fill="currentColor"><path d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm9.83-18.16l-1.79-1.79-1.8 1.79 1.8 1.79 1.79-1.79zM20 13h3v-2h-3v2zM6.76 19.16l-1.8 1.79 1.8 1.79 1.79-1.79-1.79-1.79zM17.24 19.16l1.79 1.79 1.8-1.79-1.8-1.79-1.79 1.79zM12 6a6 6 0 100 12 6 6 0 000-12z"/></svg>
@@ -66,7 +66,7 @@
       <div class="absolute inset-0 bg-black/40" id="mobile-menu-backdrop"></div>
       <div class="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-lg p-4">
         <div class="flex items-center justify-between mb-4">
-          <span class="font-semibold">Menu</span>
+          <span class="font-semibold" data-i18n="menu">Menu</span>
           <button id="btn-mobile-close" class="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Close menu">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
@@ -75,13 +75,13 @@
           {% if request.session.get('leader_id') %}
           <a href="/" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="calendar">Calendar</a>
           {% if request.session.get('leader_role') == 'admin' %}
-          <a href="/admin/church" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Church Admin</a>
-          <a href="/leaders/new" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Add Leader</a>
+          <a href="/admin/church" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="church_admin">Church Admin</a>
+          <a href="/leaders/new" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="add_leader">Add Leader</a>
           {% endif %}
           <a href="/services/new/choose" class="block px-3 py-2 rounded-md bg-brand text-white hover:bg-blue-600" data-i18n="new_service">New Service</a>
-          <form method="post" action="/logout"><button type="submit" class="block w-full px-3 py-2 rounded-md text-left hover:bg-gray-100 dark:hover:bg-gray-700">Logout</button></form>
+          <form method="post" action="/logout"><button type="submit" class="block w-full px-3 py-2 rounded-md text-left hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="logout">Logout</button></form>
           {% else %}
-          <a href="/login" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Login</a>
+          <a href="/login" class="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="login">Login</a>
           {% endif %}
           <button id="theme-toggle-mobile" class="mt-2 w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700" data-i18n="toggle_theme">Toggle Theme</button>
         </nav>
